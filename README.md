@@ -1,133 +1,156 @@
-# SuperClaude – Development Framework for Claude Code
+# SuperAugment – MCP Server for VS Code Augment
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/NomenAK/SuperClaude)
-[![GitHub issues](https://img.shields.io/github/issues/NomenAK/SuperClaude)](https://github.com/NomenAK/SuperClaude/issues)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/NomenAK/SuperClaude/blob/master/CONTRIBUTING.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/oktetopython/SuperAugment)
+[![GitHub issues](https://img.shields.io/github/issues/oktetopython/SuperAugment)](https://github.com/oktetopython/SuperAugment/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/oktetopython/SuperAugment/blob/master/CONTRIBUTING.md)
 
-**A configuration framework that enhances Claude Code with specialized commands, cognitive personas, and development methodologies.**
+**A powerful MCP (Model Context Protocol) server that enhances VS Code Augment with specialized development tools, cognitive personas, and intelligent workflows.**
 
-## 🚀 Version 2.0.1 Update
+## 🚀 Version 1.0.0 - MCP Server Release
 
-IMPORTANT: Start Fresh by removing old files and dir in .claude (RULES.md MCP.md PERSONAS.md CLAUDE.md and /commands dir)
+SuperAugment v1.0.0 introduces a complete architectural transformation from configuration framework to MCP server:
 
-SuperClaude v2 introduces architectural improvements focused on maintainability and extensibility:
+- **🔌 MCP Protocol Support**: Full implementation of Model Context Protocol for VS Code Augment integration
+- **🛠️ Development Tools**: 19+ specialized tools for code analysis, building, testing, and deployment
+- **🎭 Cognitive Personas**: 9 intelligent personas (architect, frontend, backend, security, etc.) for domain-specific assistance
+- **📊 Resource System**: Rich configuration and pattern resources accessible via MCP
+- **💡 Smart Prompts**: Pre-configured prompt templates for common development scenarios
+- **🔧 TypeScript Implementation**: Modern, type-safe codebase with comprehensive error handling
 
-- **⚡ Streamlined Architecture**: @include reference system for configuration management
-- **🎭 Personas as Flags**: 9 cognitive personas integrated into the flag system (`--persona-architect`, `--persona-security`, etc.)
-- **📦 Enhanced Installer**: install.sh with update mode, dry-run, backup handling, and platform detection
-- **🔧 Modular Design**: Template system for adding new commands and features
-- **🎯 Unified Experience**: Consistent flag behavior across all commands
-
-See [ROADMAP.md](ROADMAP.md) for future development ideas and contribution opportunities.
+See [ROADMAP.md](ROADMAP.md) for future development plans and contribution opportunities.
 
 ## 🎯 Background
 
-Claude Code provides powerful capabilities but can benefit from:
-- **Specialized expertise** for different technical domains
-- **Token efficiency** for complex projects  
+VS Code Augment provides powerful AI-assisted development capabilities, and SuperAugment extends these with:
+- **Specialized development tools** for different technical domains
+- **Intelligent workflows** for complex projects
 - **Evidence-based approaches** to development
-- **Context preservation** during debugging sessions
-- **Domain-specific thinking** for various tasks
+- **Context-aware assistance** during coding sessions
+- **Domain-specific expertise** for various development tasks
 
-## ✨ SuperClaude Features
+## ✨ SuperAugment Features
 
-SuperClaude enhances Claude Code with:
-- **18 Specialized Commands** covering development lifecycle tasks
-- **9 Cognitive Personas** for domain-specific approaches
-- **Token Optimization** with compression options
-- **Evidence-Based Methodology** encouraging documentation
-- **MCP Integration** with Context7, Sequential, Magic, Puppeteer
-- **Git Checkpoint Support** for safe experimentation
-- **Introspection Mode** for framework improvement and troubleshooting
+SuperAugment enhances VS Code Augment through MCP with:
+- **19+ Development Tools** covering the complete development lifecycle
+- **9 Cognitive Personas** for domain-specific approaches and expertise
+- **Resource System** providing rich configuration and pattern libraries
+- **Smart Prompts** for common development scenarios and workflows
+- **TypeScript Implementation** ensuring reliability and type safety
+- **Extensible Architecture** for easy customization and expansion
+- **Real-time Integration** with VS Code through the Augment plugin
 
 ## 🚀 Installation
 
-### Enhanced Installer v2.0.1
-The installer provides various options:
+### MCP Server Setup
+SuperAugment runs as an MCP server that integrates with VS Code Augment:
 
 ```bash
-git clone https://github.com/NomenAK/SuperClaude.git
-cd SuperClaude
+git clone https://github.com/oktetopython/SuperAugment.git
+cd SuperAugment
 
-# Basic installation
-./install.sh                           # Default: ~/.claude/
+# Install dependencies
+npm install
 
-# Advanced options
-./install.sh --dir /opt/claude        # Custom location
-./install.sh --update                 # Update existing installation
-./install.sh --dry-run --verbose      # Preview changes with details
-./install.sh --force                  # Skip confirmations (automation)
-./install.sh --log install.log        # Log all operations
+# Build the project
+npm run build
+
+# Start the MCP server
+npm start
 ```
 
-**v2.0.1 Installer Features:**
-- 🔄 **Update Mode**: Preserves customizations while updating
-- 👁️ **Dry Run**: Preview changes before applying
-- 💾 **Smart Backups**: Automatic backup with timestamping
-- 🧹 **Clean Updates**: Removes obsolete files
-- 🖥️ **Platform Detection**: Works with Linux, macOS, WSL
-- 📊 **Progress Tracking**: Installation feedback
+### VS Code Augment Configuration
+Add SuperAugment to your VS Code Augment MCP settings:
 
-Zero dependencies. Installs to `~/.claude/` by default.
+```json
+{
+  "mcpServers": {
+    "superaugment": {
+      "command": "node",
+      "args": ["/path/to/SuperAugment/dist/index.js"],
+      "env": {}
+    }
+  }
+}
+```
 
-**Note:** After installation, all configuration files are located in `~/.claude/` (your home directory), not in the project directory.
+**Installation Features:**
+- 🔌 **MCP Protocol**: Standard Model Context Protocol implementation
+- 🛠️ **TypeScript**: Type-safe development with modern tooling
+- 📦 **NPM Package**: Easy dependency management and updates
+- 🔧 **Configurable**: Extensive configuration options via YAML files
+- 🖥️ **Cross-Platform**: Works on Windows, macOS, and Linux
+- 📊 **Logging**: Comprehensive logging for debugging and monitoring
 
 ## 💡 Core Capabilities
 
-### 🧠 **Cognitive Personas (Now as Flags!)**
-Switch between different approaches with persona flags:
+### 🧠 **Cognitive Personas**
+Access specialized expertise through intelligent personas:
 
-```bash
-/analyze --code --persona-architect     # Systems thinking approach
-/build --react --persona-frontend       # UX-focused development  
-/scan --security --persona-security     # Security-first analysis
-/troubleshoot --prod --persona-analyzer # Root cause analysis approach
+```typescript
+// Use tools with persona context
+await mcpClient.callTool("analyze_code", {
+  code: "...",
+  persona: "architect"  // Systems thinking approach
+});
+
+await mcpClient.callTool("build_project", {
+  type: "react",
+  persona: "frontend"   // UX-focused development
+});
+
+await mcpClient.callTool("security_scan", {
+  target: "application",
+  persona: "security"   // Security-first analysis
+});
 ```
 
-**v2.0.1 Update**: All 9 personas are now universal flags, available on every command for consistent access to specialized approaches.
+**Available Personas**: All 9 personas are available as tool parameters, providing consistent access to specialized approaches across all development tools.
 
-### ⚡ **19 Commands**
-Development lifecycle coverage:
+### ⚡ **Development Tools**
+Comprehensive development lifecycle coverage:
 
-**Development Commands**
-```bash
-/build --react --magic --tdd    # Development with AI components
-/dev-setup --ci --monitor       # Environment setup
-/test --coverage --e2e --pup    # Testing strategies
+**Analysis & Quality Tools**
+```typescript
+// Code analysis and review
+mcpClient.callTool("analyze_code", { files: ["src/**/*.ts"], persona: "architect" });
+mcpClient.callTool("review_code", { pullRequest: 123, persona: "qa" });
+mcpClient.callTool("security_scan", { target: "application", depth: "deep" });
 ```
 
-**Analysis & Quality**
-```bash
-/review --quality --evidence --persona-qa     # AI-powered code review
-/analyze --architecture --seq   # System analysis
-/troubleshoot --prod --five-whys # Issue resolution
-/improve --performance --iterate # Optimization
-/explain --depth expert --visual # Documentation
+**Build & Deployment Tools**
+```typescript
+// Project building and deployment
+mcpClient.callTool("build_project", { type: "react", features: ["typescript", "testing"] });
+mcpClient.callTool("setup_environment", { type: "development", ci: true });
+mcpClient.callTool("deploy_application", { environment: "production", strategy: "blue-green" });
 ```
 
-**Operations & Security**
-```bash
-/deploy --env prod --plan       # Deployment planning
-/scan --security --owasp --deps # Security audits
-/migrate --dry-run --rollback   # Database migrations
-/cleanup --all --validate       # Maintenance tasks
+**Documentation & Design Tools**
+```typescript
+// Documentation and system design
+mcpClient.callTool("generate_docs", { type: "api", format: "openapi" });
+mcpClient.callTool("design_system", { architecture: "microservices", persona: "architect" });
+mcpClient.callTool("explain_code", { complexity: "expert", visual: true });
 ```
 
-### 🎛️ **MCP Integration**
-- **Context7**: Access to library documentation
-- **Sequential**: Multi-step reasoning capabilities
-- **Magic**: AI-generated UI components
-- **Puppeteer**: Browser testing and automation
+### 🔌 **MCP Protocol Integration**
+SuperAugment implements the full Model Context Protocol specification:
 
-**⚠️ Important:** SuperClaude does not include MCP servers. You need to install them separately in Claude Code's MCP settings to use MCP-related flags (--c7, --seq, --magic, --pup).
+- **Tools**: 6+ specialized development tools with cognitive persona support
+- **Resources**: Rich configuration and pattern libraries accessible via MCP
+- **Prompts**: Pre-configured prompt templates for common development scenarios
+- **Real-time Integration**: Seamless integration with VS Code through Augment plugin
 
-### 📊 **Token Efficiency**
-SuperClaude's @include template system helps manage token usage:
-- **UltraCompressed mode** option for token reduction
-- **Template references** for configuration management
-- **Caching mechanisms** to avoid redundancy
-- **Context-aware compression** options
+**✅ Native MCP Support:** SuperAugment is a complete MCP server implementation, providing native integration with VS Code Augment without requiring additional setup.
+
+### ⚡ **Performance & Efficiency**
+SuperAugment is designed for optimal performance and resource usage:
+- **TypeScript Implementation** for type safety and performance
+- **Efficient Resource Management** with intelligent caching
+- **Streaming Support** for large data processing
+- **Concurrent Tool Execution** for improved throughput
+- **Memory Optimization** for long-running server instances
 
 ## 🎮 Example Workflows
 
