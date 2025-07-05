@@ -78,8 +78,22 @@ Add SuperAugment to your VS Code Augment MCP settings:
 
 #### Method 2: Settings JSON (Recommended)
 1. Open VS Code Settings JSON (Ctrl/Cmd + Shift + P → "Preferences: Open Settings (JSON)")
-2. Add the MCP server configuration:
+2. Choose one of the following configuration methods:
 
+#### 📦 **Method 1: NPM Package (Recommended)**
+```json
+{
+  "mcpServers": {
+    "superaugment": {
+      "command": "npx",
+      "args": ["-y", "superaugment"],
+      "env": {}
+    }
+  }
+}
+```
+
+#### 🏠 **Method 2: Local Development**
 ```json
 {
   "mcpServers": {
@@ -92,7 +106,26 @@ Add SuperAugment to your VS Code Augment MCP settings:
 }
 ```
 
-#### Path Examples:
+#### 🔄 **Method 3: NPM Start**
+```json
+{
+  "mcpServers": {
+    "superaugment": {
+      "command": "npm",
+      "args": ["start"],
+      "cwd": "C:/path/to/SuperAugment",
+      "env": {}
+    }
+  }
+}
+```
+
+#### Configuration Notes:
+- **Method 1**: Automatically downloads and runs the latest version (requires NPM publication)
+- **Method 2**: Use for local development or custom builds
+- **Method 3**: Use for development with npm scripts
+
+#### Path Examples for Methods 2 & 3:
 - **Windows**: `"C:/Users/YourName/SuperAugment/dist/index.js"`
 - **macOS/Linux**: `"/Users/YourName/SuperAugment/dist/index.js"`
 - **Custom Install**: Use the path where you installed SuperAugment

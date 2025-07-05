@@ -3,7 +3,16 @@
   "version": "1.0.0",
   "description": "A powerful MCP server that enhances VS Code Augment with specialized development tools, cognitive personas, and intelligent workflows",
   "main": "dist/index.js",
+  "bin": {
+    "superaugment": "dist/index.js"
+  },
   "type": "module",
+  "files": [
+    "dist/**/*",
+    "config/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
