@@ -1,7 +1,8 @@
 # SuperAugment – MCP Server for VS Code Augment
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/oktetopython/SuperAugment)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/oktetopython/SuperAugment)
+[![NPM](https://img.shields.io/npm/v/superaugment.svg)](https://www.npmjs.com/package/superaugment)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-blue.svg)](https://www.typescriptlang.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
@@ -14,23 +15,25 @@
 
 SuperAugment is an **extensible MCP server foundation** that enhances VS Code Augment with specialized development capabilities. By implementing the Model Context Protocol, it provides:
 
-- **🛠️ 6 Development Tools** with foundational implementations and clear extension points
+- **🛠️ 7 Development Tools** with real file system integration and production-ready features
 - **🎭 9 Cognitive Personas** for domain-specific expertise and approaches
 - **📚 Rich Resource System** with development patterns and best practices
 - **💡 Smart Prompt Templates** for common development scenarios
 - **🔧 TypeScript Implementation** ensuring reliability and type safety
 - **🏗️ Extensible Architecture** designed for community contributions and enhancements
 
-## 🎯 Current Status: Foundation Release v1.0.0
+## 🎯 Current Status: Production Release v1.0.1
 
-SuperAugment v1.0.0 is a **foundation release** that provides:
+SuperAugment v1.0.1 is a **production-ready release** that provides:
 
-✅ **Solid Architecture** - Production-ready MCP server framework
-✅ **Basic Tool Functionality** - MVP implementations of 6 development tools
+✅ **Production Architecture** - Fully functional MCP server with schema validation
+✅ **Real File System Integration** - Actual project file analysis and processing
+✅ **Enhanced Code Analysis** - Production-ready analyze_code and review_code tools
+✅ **NPM Distribution** - Professional package distribution via npm registry
 ✅ **Complete Persona System** - 9 cognitive personas with specialized approaches
 ✅ **Extensible Design** - Clear patterns for adding new tools and features
 
-🚧 **Development Focus** - Tools provide structured responses and workflows, with opportunities for enhanced functionality through community contributions.
+🚀 **Ready for Production** - Core tools provide real functionality with file system integration, code analysis, and project structure understanding.
 
 ## 🎯 Why Choose SuperAugment?
 
@@ -45,7 +48,16 @@ Traditional AI coding assistants provide generic responses. SuperAugment brings 
 
 ### 1. Install SuperAugment
 
-#### Option A: Automated Installation (Recommended)
+#### Option A: NPM Package (Recommended)
+```bash
+# Global installation
+npm install -g superaugment
+
+# Or use directly with npx (no installation needed)
+npx superaugment
+```
+
+#### Option B: From Source
 ```bash
 git clone https://github.com/oktetopython/SuperAugment.git
 cd SuperAugment
@@ -143,9 +155,9 @@ Add SuperAugment to your VS Code Augment MCP settings:
 
 You should see tools like `analyze_code`, `security_scan`, `build_project` etc. in your Augment interface.
 
-## 🎉 Major Update: Real File System Integration!
+## 🎉 Latest Release: SuperAugment v1.0.1
 
-**SuperAugment v1.1.0** now includes **real file system integration** - the #1 most requested feature!
+**SuperAugment v1.0.1** is now **production-ready** with real functionality and NPM distribution!
 
 ### 🌟 **NEW: Production-Ready Features**
 - **🗂️ Real File System Access** - Analyze actual project files, not just code snippets
@@ -180,41 +192,69 @@ You should see tools like `analyze_code`, `security_scan`, `build_project` etc. 
 
 See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for detailed technical status.
 
+## 📋 Release History
+
+### v1.0.1 (Latest) - Schema Fix & NPM Release
+- 🐛 **Critical Fix**: Resolved MCP schema validation errors
+- 📦 **NPM Distribution**: Published to npm registry as `superaugment`
+- 🔧 **Enhanced Compatibility**: All tools now work correctly with VS Code Augment
+- ⚡ **Improved Stability**: Fixed schema type validation issues
+
+### v1.0.0 - File System Integration
+- 🗂️ **Real File System Access**: Analyze actual project files
+- 📊 **Project Structure Analysis**: Complete project understanding
+- 🔍 **Enhanced Code Analysis**: Production-ready analyze_code tool
+- 🎭 **File-Aware Personas**: Context-aware cognitive responses
+- 🏗️ **Framework Detection**: Auto-detect React, Vue, Angular, etc.
+
 ## 🛠️ Development Tools
 
-SuperAugment provides 6 development tools with foundational implementations and clear extension points:
+SuperAugment provides 7 development tools with real functionality and production-ready features:
 
-> **Note**: Current implementations provide structured workflows and responses. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for detailed feature status.
+> **Status**: 2 tools are production-ready with real file system integration, 5 tools provide structured workflows. See [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for detailed feature status.
 
 ### 🔍 Code Analysis & Quality
 
-#### `analyze_code` ⭐ **Most Complete**
-Code analysis with pattern detection and persona-driven insights.
+#### `analyze_code` 🌟 **Production Ready**
+Real file system integration with comprehensive code analysis.
 ```typescript
-// Analyze code with architect perspective
+// Analyze TypeScript files with architect perspective
 {
-  "code": "function example() { return 'hello'; }",
+  "files": ["src/**/*.ts"],
   "persona": "architect",
   "depth": "comprehensive",
   "focus": ["performance", "maintainability"]
 }
 ```
-**Current Features**: Basic pattern detection (console.log, var usage, eval), persona insights, metrics calculation
-**Limitations**: Simple pattern matching, limited language support
+**Features**: Real file reading, glob patterns, project structure analysis, framework detection, quality metrics
+**Status**: ✅ Production ready with file system integration
 
-#### `review_code` 🔶 **Basic Implementation**
-Structured code review framework with persona expertise.
+#### `analyze_project` 🌟 **Production Ready**
+Complete project structure and dependency analysis.
 ```typescript
-// Security-focused code review
+// Analyze entire project structure
 {
-  "diff": "...",
-  "persona": "security",
-  "criteria": ["security", "performance"],
-  "severity": "high"
+  "persona": "architect",
+  "includeFileTree": true,
+  "analyzeDependencies": true
 }
 ```
-**Current Features**: Structured review reports, persona-specific recommendations
-**Limitations**: Template-based responses, no real code analysis
+**Features**: Project structure analysis, framework detection, dependency analysis, issue detection
+**Status**: ✅ Production ready with comprehensive insights
+
+#### `review_code` 🌟 **Production Ready**
+Real code review with comprehensive quality checks and security analysis.
+```typescript
+// Security-focused code review with real file analysis
+{
+  "files": ["src/**/*.js"],
+  "persona": "security",
+  "criteria": ["security", "performance", "quality"],
+  "severity": "medium"
+}
+```
+**Features**: Real file analysis, security checks, performance analysis, quality metrics, persona insights
+**Status**: ✅ Production ready with comprehensive code review capabilities
 
 #### `security_scan` ⭐ **Good Foundation**
 Security vulnerability scanning with OWASP awareness.
@@ -737,7 +777,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📊 Project Stats
 
-- **🛠️ Tools**: 7 development tools (2 production-ready, 2 good foundation, 3 basic)
+- **🛠️ Tools**: 7 development tools (3 production-ready, 1 good foundation, 3 basic)
 - **🗂️ File System**: Full integration with glob patterns and project analysis
 - **🎭 Personas**: 9 cognitive personas (fully implemented with file awareness)
 - **📚 Resources**: 7+ pattern and documentation resources (complete)
