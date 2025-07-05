@@ -1,6 +1,6 @@
 {
   "name": "superaugment",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful MCP server that enhances VS Code Augment with specialized development tools, cognitive personas, and intelligent workflows",
   "keywords": [
     "mcp",
