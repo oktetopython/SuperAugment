@@ -67,10 +67,16 @@ export class ToolManager {
     const tools: Tool[] = [];
 
     for (const [name, tool] of this.tools) {
+      // Create MCP-compatible schema
+      const mcpSchema = {
+        type: "object" as const,
+        properties: this.zodSchemaToProperties(tool.inputSchema),
+      };
+
       tools.push({
         name,
         description: tool.description,
-        inputSchema: tool.inputSchema,
+        inputSchema: mcpSchema,
       });
     }
 
@@ -109,5 +115,69 @@ export class ToolManager {
    */
   getToolNames(): string[] {
     return Array.from(this.tools.keys());
+  }
+
+  /**
+   * Convert Zod schema to MCP-compatible properties
+   */
+  private zodSchemaToProperties(schema: any): Record<string, any> {
+    try {
+      // For Zod object schemas, extract the shape
+      if (schema._def && schema._def.shape) {
+        const properties: Record<string, any> = {};
+        const shape = schema._def.shape();
+
+        for (const [key, value] of Object.entries(shape)) {
+          properties[key] = this.zodTypeToJsonSchema(value as any);
+        }
+
+        return properties;
+      }
+
+      // Fallback for other schema types
+      return {};
+    } catch (error) {
+      logger.warn(`Failed to convert schema for tool`, { error });
+      return {};
+    }
+  }
+
+  /**
+   * Convert individual Zod type to JSON Schema
+   */
+  private zodTypeToJsonSchema(zodType: any): any {
+    try {
+      const typeName = zodType._def?.typeName;
+
+      switch (typeName) {
+        case 'ZodString':
+          return { type: 'string', description: zodType.description };
+        case 'ZodNumber':
+          return { type: 'number', description: zodType.description };
+        case 'ZodBoolean':
+          return { type: 'boolean', description: zodType.description };
+        case 'ZodArray':
+          return {
+            type: 'array',
+            items: this.zodTypeToJsonSchema(zodType._def.type),
+            description: zodType.description
+          };
+        case 'ZodEnum':
+          return {
+            type: 'string',
+            enum: zodType._def.values,
+            description: zodType.description
+          };
+        case 'ZodOptional':
+          return this.zodTypeToJsonSchema(zodType._def.innerType);
+        case 'ZodDefault':
+          const baseSchema = this.zodTypeToJsonSchema(zodType._def.innerType);
+          return { ...baseSchema, default: zodType._def.defaultValue() };
+        default:
+          return { type: 'string', description: zodType.description || 'Unknown type' };
+      }
+    } catch (error) {
+      return { type: 'string', description: 'Error parsing schema' };
+    }
   }
 }
