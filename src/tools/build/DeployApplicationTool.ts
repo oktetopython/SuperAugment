@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SuperAugmentTool } from '../ToolManager.js';
+import type { SuperAugmentTool } from '../ToolManager.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { logger } from '../../utils/logger.js';
 
@@ -17,7 +17,7 @@ type DeployApplicationInput = z.infer<typeof DeployApplicationInputSchema>;
 export class DeployApplicationTool implements SuperAugmentTool {
   name = 'deploy_application';
   description = 'Deploy applications with intelligent strategies and persona-driven approaches';
-  inputSchema = DeployApplicationInputSchema.schema;
+  inputSchema = DeployApplicationInputSchema;
 
   constructor(private configManager: ConfigManager) {}
 
@@ -70,7 +70,7 @@ export class DeployApplicationTool implements SuperAugmentTool {
     return result;
   }
 
-  private generateDeploymentSteps(args: DeployApplicationInput, persona: any): string[] {
+  private generateDeploymentSteps(args: DeployApplicationInput, _persona: any): string[] {
     const steps = [];
 
     if (args.rollback) {
@@ -114,7 +114,7 @@ export class DeployApplicationTool implements SuperAugmentTool {
     return steps;
   }
 
-  private generateHealthChecks(args: DeployApplicationInput): any[] {
+  private generateHealthChecks(_args: DeployApplicationInput): any[] {
     return [
       {
         name: 'HTTP Health Check',
@@ -135,7 +135,7 @@ export class DeployApplicationTool implements SuperAugmentTool {
     ];
   }
 
-  private generateMonitoring(args: DeployApplicationInput): any {
+  private generateMonitoring(_args: DeployApplicationInput): any {
     return {
       metrics: ['response_time', 'error_rate', 'throughput', 'cpu_usage', 'memory_usage'],
       alerts: [

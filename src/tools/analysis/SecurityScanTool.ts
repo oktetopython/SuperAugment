@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SuperAugmentTool } from '../ToolManager.js';
+import type { SuperAugmentTool } from '../ToolManager.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { logger } from '../../utils/logger.js';
 
@@ -16,7 +16,7 @@ type SecurityScanInput = z.infer<typeof SecurityScanInputSchema>;
 export class SecurityScanTool implements SuperAugmentTool {
   name = 'security_scan';
   description = 'Perform security vulnerability scans with specialized security expertise';
-  inputSchema = SecurityScanInputSchema.schema;
+  inputSchema = SecurityScanInputSchema;
 
   constructor(private configManager: ConfigManager) {}
 

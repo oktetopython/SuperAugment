@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SuperAugmentTool } from '../ToolManager.js';
+import type { SuperAugmentTool } from '../ToolManager.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { logger } from '../../utils/logger.js';
 
@@ -17,7 +17,7 @@ type TestProjectInput = z.infer<typeof TestProjectInputSchema>;
 export class TestProjectTool implements SuperAugmentTool {
   name = 'test_project';
   description = 'Run comprehensive tests with persona-driven testing strategies';
-  inputSchema = TestProjectInputSchema.schema;
+  inputSchema = TestProjectInputSchema;
 
   constructor(private configManager: ConfigManager) {}
 
@@ -84,7 +84,7 @@ export class TestProjectTool implements SuperAugmentTool {
     };
   }
 
-  private getTestingRecommendations(args: TestProjectInput, persona: any): string[] {
+  private getTestingRecommendations(_args: TestProjectInput, persona: any): string[] {
     const recommendations = [];
 
     switch (persona.name) {

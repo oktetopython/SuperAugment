@@ -1,4 +1,4 @@
-import { Prompt } from '@modelcontextprotocol/sdk/types.js';
+import type { Prompt } from '@modelcontextprotocol/sdk/types.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
 

@@ -1,14 +1,7 @@
-import { Resource } from '@modelcontextprotocol/sdk/types.js';
+import type { Resource } from '@modelcontextprotocol/sdk/types.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
-import { readFile } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import YAML from 'yaml';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PROJECT_ROOT = join(__dirname, '..', '..');
 
 /**
  * Manages resources for SuperAugment MCP server
@@ -127,7 +120,7 @@ export class ResourceManager {
       name: 'Development Patterns',
       description: 'Common development patterns and best practices',
       mimeType: 'application/yaml',
-      content: YAML.stringify(patterns.development || {}),
+      content: YAML.stringify(patterns['development'] || {}),
     });
 
     // Architecture patterns
@@ -135,7 +128,7 @@ export class ResourceManager {
       name: 'Architecture Patterns',
       description: 'System architecture patterns and design principles',
       mimeType: 'application/yaml',
-      content: YAML.stringify(patterns.architecture || {}),
+      content: YAML.stringify(patterns['architecture'] || {}),
     });
 
     // Security patterns
@@ -143,7 +136,7 @@ export class ResourceManager {
       name: 'Security Patterns',
       description: 'Security best practices and vulnerability patterns',
       mimeType: 'application/yaml',
-      content: YAML.stringify(patterns.security || {}),
+      content: YAML.stringify(patterns['security'] || {}),
     });
 
     // Testing patterns
@@ -151,7 +144,7 @@ export class ResourceManager {
       name: 'Testing Patterns',
       description: 'Testing strategies and quality assurance patterns',
       mimeType: 'application/yaml',
-      content: YAML.stringify(patterns.testing || {}),
+      content: YAML.stringify(patterns['testing'] || {}),
     });
   }
 

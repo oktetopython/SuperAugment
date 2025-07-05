@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SuperAugmentTool } from '../ToolManager.js';
+import type { SuperAugmentTool } from '../ToolManager.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { logger } from '../../utils/logger.js';
 
@@ -17,7 +17,7 @@ type BuildProjectInput = z.infer<typeof BuildProjectInputSchema>;
 export class BuildProjectTool implements SuperAugmentTool {
   name = 'build_project';
   description = 'Build projects with intelligent configuration and persona-driven approaches';
-  inputSchema = BuildProjectInputSchema.schema;
+  inputSchema = BuildProjectInputSchema;
 
   constructor(private configManager: ConfigManager) {}
 
@@ -68,7 +68,7 @@ export class BuildProjectTool implements SuperAugmentTool {
     return result;
   }
 
-  private generateBuildSteps(args: BuildProjectInput, persona: any): string[] {
+  private generateBuildSteps(args: BuildProjectInput, _persona: any): string[] {
     const steps = [];
 
     switch (args.type) {
@@ -132,7 +132,7 @@ export class BuildProjectTool implements SuperAugmentTool {
     return artifacts;
   }
 
-  private generateRecommendations(args: BuildProjectInput, persona: any): string[] {
+  private generateRecommendations(args: BuildProjectInput, _persona: any): string[] {
     const recommendations = [];
 
     if (args.environment === 'production') {
@@ -152,7 +152,7 @@ export class BuildProjectTool implements SuperAugmentTool {
     return recommendations;
   }
 
-  private getPersonaSpecificSuggestions(args: BuildProjectInput, persona: any): string[] {
+  private getPersonaSpecificSuggestions(_args: BuildProjectInput, persona: any): string[] {
     const suggestions = [];
 
     switch (persona.name) {

@@ -1,15 +1,19 @@
 tools:
   - name: analyze_code
-    description: "Analyze code for quality, patterns, issues, and improvements with cognitive persona support"
+    description: "Analyze code files or direct code content for quality, patterns, issues, and improvements"
     category: "analysis"
     parameters:
       files:
         type: "array"
-        description: "Array of file paths to analyze"
+        description: "Array of file paths or glob patterns to analyze"
         required: false
       code:
         type: "string"
         description: "Code content to analyze directly"
+        required: false
+      projectPath:
+        type: "string"
+        description: "Project root path (defaults to current directory)"
         required: false
       persona:
         type: "string"
@@ -28,15 +32,64 @@ tools:
         required: false
       language:
         type: "string"
-        description: "Programming language"
+        description: "Programming language (auto-detected if not specified)"
         required: false
+      includeMetrics:
+        type: "boolean"
+        description: "Include code metrics in analysis"
+        required: false
+        default: true
     personas: ["architect", "analyzer", "refactorer", "mentor"]
     examples:
-      - description: "Analyze TypeScript code with architect persona"
+      - description: "Analyze TypeScript files with architect persona"
         parameters:
-          code: "function example() { return 'hello'; }"
+          files: ["src/**/*.ts"]
           persona: "architect"
           depth: "comprehensive"
+      - description: "Analyze direct code with security focus"
+        parameters:
+          code: "function example() { return 'hello'; }"
+          persona: "security"
+          focus: ["security", "performance"]
+
+  - name: analyze_project
+    description: "Analyze project structure, dependencies, and overall architecture"
+    category: "analysis"
+    parameters:
+      projectPath:
+        type: "string"
+        description: "Project root path (defaults to current directory)"
+        required: false
+      persona:
+        type: "string"
+        description: "Cognitive persona to use for analysis"
+        required: false
+        enum: ["architect", "frontend", "backend", "security", "qa", "performance", "analyzer", "refactorer", "mentor"]
+      includeFileTree:
+        type: "boolean"
+        description: "Include detailed file tree in output"
+        required: false
+        default: false
+      analyzeDependencies:
+        type: "boolean"
+        description: "Analyze package dependencies"
+        required: false
+        default: true
+      detectIssues:
+        type: "boolean"
+        description: "Detect potential project issues"
+        required: false
+        default: true
+    personas: ["architect", "analyzer"]
+    examples:
+      - description: "Analyze project with architect perspective"
+        parameters:
+          persona: "architect"
+          includeFileTree: true
+      - description: "Quick project overview"
+        parameters:
+          analyzeDependencies: false
+          detectIssues: false
 
   - name: review_code
     description: "Perform comprehensive code reviews with cognitive persona expertise"

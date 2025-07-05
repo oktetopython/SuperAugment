@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SuperAugmentTool } from '../ToolManager.js';
+import type { SuperAugmentTool } from '../ToolManager.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { logger } from '../../utils/logger.js';
 
@@ -20,7 +20,7 @@ type ReviewCodeInput = z.infer<typeof ReviewCodeInputSchema>;
 export class ReviewCodeTool implements SuperAugmentTool {
   name = 'review_code';
   description = 'Perform comprehensive code reviews with cognitive persona expertise';
-  inputSchema = ReviewCodeInputSchema.schema;
+  inputSchema = ReviewCodeInputSchema;
 
   constructor(private configManager: ConfigManager) {}
 
@@ -49,7 +49,7 @@ export class ReviewCodeTool implements SuperAugmentTool {
     }
   }
 
-  private async performReview(args: ReviewCodeInput, persona: any): Promise<any> {
+  private async performReview(_args: ReviewCodeInput, persona: any): Promise<any> {
     // Placeholder implementation
     return {
       summary: 'Code review completed',

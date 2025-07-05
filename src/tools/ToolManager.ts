@@ -1,9 +1,10 @@
-import { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
 
 // Import tool implementations
 import { AnalyzeCodeTool } from './analysis/AnalyzeCodeTool.js';
+import { AnalyzeProjectTool } from './analysis/AnalyzeProjectTool.js';
 import { ReviewCodeTool } from './analysis/ReviewCodeTool.js';
 import { SecurityScanTool } from './analysis/SecurityScanTool.js';
 import { BuildProjectTool } from './build/BuildProjectTool.js';
@@ -37,6 +38,7 @@ export class ToolManager {
 
       // Register all tools
       this.registerTool(new AnalyzeCodeTool(this.configManager));
+      this.registerTool(new AnalyzeProjectTool(this.configManager));
       this.registerTool(new ReviewCodeTool(this.configManager));
       this.registerTool(new SecurityScanTool(this.configManager));
       this.registerTool(new BuildProjectTool(this.configManager));
