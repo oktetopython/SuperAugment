@@ -820,7 +820,7 @@ SuperAugment brings the power of specialized AI assistance directly into your VS
 
 <div align="center">
 
-**SuperAugment v1.0.0** – *MCP Server for VS Code Augment*
+**SuperAugment v1.0.2** – *MCP Server for VS Code Augment*
 
 [![⭐ Star on GitHub](https://img.shields.io/github/stars/oktetopython/SuperAugment?style=social)](https://github.com/oktetopython/SuperAugment)
 [![💬 Join Discussions](https://img.shields.io/badge/GitHub-Discussions-blue)](https://github.com/oktetopython/SuperAugment/discussions)
