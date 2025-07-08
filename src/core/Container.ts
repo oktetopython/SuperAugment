@@ -5,11 +5,11 @@
  * and improving testability and maintainability.
  */
 
-export type Constructor<T = {}> = new (...args: any[]) => T;
+export type Constructor<T = Record<string, never>> = new (...args: unknown[]) => T;
 export type Factory<T> = () => T | Promise<T>;
-export type ServiceIdentifier<T = any> = string | symbol | Constructor<T>;
+export type ServiceIdentifier<T = unknown> = string | symbol | Constructor<T>;
 
-interface ServiceRegistration<T = any> {
+interface ServiceRegistration<T = unknown> {
   factory: Factory<T>;
   singleton: boolean;
   instance?: T;
@@ -99,7 +99,7 @@ export class Container {
    * Resolve a service from the container
    */
   async resolve<T>(identifier: ServiceIdentifier<T>): Promise<T> {
-    const registration = this.services.get(identifier);
+    const registration = this.services.get(identifier) as ServiceRegistration<T>;
     
     if (!registration) {
       throw new Error(`Service not registered: ${String(identifier)}`);

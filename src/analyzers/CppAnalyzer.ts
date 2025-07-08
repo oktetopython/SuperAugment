@@ -208,14 +208,24 @@ export class CppAnalyzer {
   /**
    * Analyze C++ semantics (placeholder implementation)
    */
-  async analyzeSemantics(_filePath: string, _cppStandard: string): Promise<any> {
+  async analyzeSemantics(filePath: string, cppStandard: string): Promise<any> {
     // Placeholder for semantic analysis
     // In a real implementation, this would involve:
     // - Type checking
     // - Scope analysis
     // - Symbol resolution
     // - Template instantiation analysis
-    return {};
+    
+    logger.info(`Semantic analysis for ${filePath} using ${cppStandard} standard`);
+    return {
+      filePath,
+      cppStandard,
+      semanticInfo: {
+        typeChecking: 'not implemented',
+        scopeAnalysis: 'not implemented',
+        symbolResolution: 'not implemented'
+      }
+    };
   }
 
   /**
@@ -634,9 +644,12 @@ export class CppAnalyzer {
   /**
    * Extract include statements
    */
-  private extractIncludes(lines: string[], _filePath: string): CppInclude[] {
+  private extractIncludes(lines: string[], filePath: string): CppInclude[] {
     const includes: CppInclude[] = [];
     const includeRegex = /^\s*#include\s*[<"](.*)[>"]$/;
+    
+    // Note: filePath could be used for relative path resolution in future implementation
+    logger.debug(`Extracting includes from ${filePath}`);
 
     lines.forEach((line, index) => {
       const match = line.match(includeRegex);
@@ -659,9 +672,11 @@ export class CppAnalyzer {
   /**
    * Extract variable declarations
    */
-  private extractVariables(_lines: string[]): CppVariable[] {
+  private extractVariables(lines: string[]): CppVariable[] {
     const variables: CppVariable[] = [];
     // Simplified variable extraction
+    // TODO: Implement actual variable parsing from lines
+    logger.debug(`Processing ${lines.length} lines for variable extraction`);
     return variables;
   }
 

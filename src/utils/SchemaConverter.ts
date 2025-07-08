@@ -593,11 +593,14 @@ export class SchemaConverter {
   private convertZodRecord(
     zodRecord: z.ZodRecord<any>,
     options: ConversionOptions,
-    _depth: number
+    depth: number
   ): JsonSchemaProperty {
     const description = options.includeDescriptions 
       ? `Record type${zodRecord.description ? ': ' + zodRecord.description : ''}` 
       : undefined;
+    
+    // Note: depth parameter could be used for nested record handling in future implementation
+    logger.debug(`Converting ZodRecord at depth ${depth}`);
     
     return {
       type: 'object',
