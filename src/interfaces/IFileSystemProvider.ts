@@ -38,7 +38,7 @@ export interface BatchReadResult {
   }>;
 }
 
-export interface CacheOptions {
+export interface FileSystemCacheOptions {
   ttl?: number; // Time to live in milliseconds
   maxSize?: number; // Maximum cache size in bytes
   enabled?: boolean;
@@ -156,7 +156,7 @@ export interface IFileSystemProvider {
   /**
    * Configure cache options
    */
-  configureCaching(options: CacheOptions): Promise<void>;
+  configureCaching(options: FileSystemCacheOptions): Promise<void>;
 
   /**
    * Validate file path

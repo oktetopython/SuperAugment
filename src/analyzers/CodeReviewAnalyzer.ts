@@ -127,7 +127,7 @@ export class CodeReviewAnalyzer {
 
     // Calculate metrics
     const metrics = options.includeMetrics 
-      ? this.calculateMetrics(files, findings, { totalLines, codeLines, commentLines, blankLines })
+      ? this.calculateMetrics(files, findings, { lines: totalLines, codeLines, commentLines, blankLines })
       : this.getDefaultMetrics();
 
     // Generate recommendations
@@ -507,7 +507,7 @@ export class CodeReviewAnalyzer {
   private calculateMetrics(
     files: FileInfo[], 
     findings: ReviewFinding[], 
-    lineCounts: { totalLines: number; codeLines: number; commentLines: number; blankLines: number }
+    lineCounts: { lines: number; codeLines: number; commentLines: number; blankLines: number }
   ): QualityMetrics {
     const criticalIssues = findings.filter(f => f.severity === 'critical').length;
     const highIssues = findings.filter(f => f.severity === 'high').length;

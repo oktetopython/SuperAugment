@@ -50,7 +50,7 @@ export class ReviewCodeTool implements SuperAugmentTool {
       // Perform comprehensive review using the new analyzer
       const reviewResult = await this.codeReviewAnalyzer.analyzeFiles(filesToReview, {
         includeMetrics: validatedArgs.includeMetrics,
-        criteria: validatedArgs.criteria,
+        criteria: validatedArgs.criteria || [],
         severity: validatedArgs.severity,
       });
 
@@ -145,7 +145,7 @@ export class ReviewCodeTool implements SuperAugmentTool {
       
       insights.focused_findings = reviewResult.findings.filter(finding => {
         const category = finding.category.toLowerCase();
-        return expertiseAreas.some(area => 
+        return expertiseAreas.some((area: string) => 
           area.includes(category) || 
           category.includes(area) ||
           (area === 'security' && category === 'security') ||

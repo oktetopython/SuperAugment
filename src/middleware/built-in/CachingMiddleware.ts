@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'crypto';
-import { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
+import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
 
 export interface CachingOptions {
   enabled: boolean;
@@ -103,9 +103,9 @@ export class CachingMiddleware implements IMiddleware {
         
         // Add cache metadata to result
         if (result.metadata) {
-          result.metadata.cached = true;
-          result.metadata.cacheKey = this.sanitizeCacheKey(cacheKey);
-          result.metadata.cacheHit = false;
+          result.metadata['cached'] = true;
+          result.metadata['cacheKey'] = this.sanitizeCacheKey(cacheKey);
+          result.metadata['cacheHit'] = false;
         } else {
           result.metadata = {
             cached: true,
@@ -247,7 +247,7 @@ export class CachingMiddleware implements IMiddleware {
   /**
    * Get cache statistics
    */
-  async getCacheStats(context: MiddlewareContext): Promise<{
+  async getCacheStats(_context: MiddlewareContext): Promise<{
     hits: number;
     misses: number;
     hitRate: number;

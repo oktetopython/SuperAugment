@@ -8,7 +8,7 @@
 
 import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
-import {
+import type {
   IErrorHandler,
   ErrorContext,
   ErrorRecoveryStrategy,
@@ -183,7 +183,7 @@ export class LayeredErrorHandler implements IErrorHandler {
         recoverable: false,
         recoveryAttempted: false,
         timestamp: new Date(),
-        stackTrace: error.stack,
+        stackTrace: error.stack || '',
       };
 
       this.errorReports.push(fallbackReport);
@@ -357,7 +357,7 @@ export class LayeredErrorHandler implements IErrorHandler {
   sanitizeError(error: Error): Error {
     const sanitized = new Error(error.message);
     sanitized.name = error.name;
-    sanitized.stack = error.stack;
+    sanitized.stack = error.stack || '';
     
     // Remove sensitive information
     if (error.message.includes('password') || error.message.includes('token')) {
@@ -393,59 +393,63 @@ export class LayeredErrorHandler implements IErrorHandler {
 
   // Private helper methods
 
-  private async handleToolExecutionError(error: ToolExecutionError, context: ErrorContext): Promise<ErrorReport> {
+  private async handleToolExecutionError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+    const toolError = error as ToolExecutionError;
     return {
       id: randomUUID(),
       error,
       context,
-      code: error.code,
+      code: toolError.code,
       severity: 'medium',
       recoverable: true,
       recoveryAttempted: false,
       timestamp: new Date(),
-      stackTrace: error.stack,
+      stackTrace: error.stack || "",
     };
   }
 
-  private async handleAnalysisError(error: AnalysisError, context: ErrorContext): Promise<ErrorReport> {
+  private async handleAnalysisError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+    const analysisError = error as AnalysisError;
     return {
       id: randomUUID(),
       error,
       context,
-      code: error.code,
+      code: analysisError.code,
       severity: 'low',
       recoverable: true,
       recoveryAttempted: false,
       timestamp: new Date(),
-      stackTrace: error.stack,
+      stackTrace: error.stack || "",
     };
   }
 
-  private async handleConfigurationError(error: ConfigurationError, context: ErrorContext): Promise<ErrorReport> {
+  private async handleConfigurationError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+    const configError = error as ConfigurationError;
     return {
       id: randomUUID(),
       error,
       context,
-      code: error.code,
+      code: configError.code,
       severity: 'high',
       recoverable: false,
       recoveryAttempted: false,
       timestamp: new Date(),
-      stackTrace: error.stack,
+      stackTrace: error.stack || "",
     };
   }
 
-  private async handleFileSystemError(error: FileSystemError, context: ErrorContext): Promise<ErrorReport> {
+  private async handleFileSystemError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+    const fsError = error as FileSystemError;
     return {
       id: randomUUID(),
       error,
       context,
-      code: error.code,
+      code: fsError.code,
       severity: 'medium',
       recoverable: true,
       recoveryAttempted: false,
       timestamp: new Date(),
-      stackTrace: error.stack,
+      stackTrace: error.stack || "",
     };
   }
 
@@ -459,7 +463,7 @@ export class LayeredErrorHandler implements IErrorHandler {
       recoverable: false,
       recoveryAttempted: false,
       timestamp: new Date(),
-      stackTrace: error.stack,
+      stackTrace: error.stack || "",
     };
   }
 
@@ -476,7 +480,7 @@ export class LayeredErrorHandler implements IErrorHandler {
         return error instanceof SuperAugmentError && 
                transientCodes.includes(error.code);
       },
-      recover: async (error, context) => {
+      recover: async (error, _context) => {
         // Simple retry - the original operation should be retried by the caller
         throw error; // Re-throw to trigger retry
       },
@@ -488,7 +492,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     this.registerRecoveryStrategy({
       name: 'analysis-fallback',
       canRecover: (error) => error instanceof AnalysisError,
-      recover: async (error, context) => {
+      recover: async (error, _context) => {
         return {
           status: 'partial',
           message: 'Analysis completed with limited results due to error',
@@ -498,7 +502,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     });
   }
 
-  private updateMetrics(report: ErrorReport, processingTime: number): void {
+  private updateMetrics(report: ErrorReport, _processingTime: number): void {
     this.metrics.totalErrors++;
     
     if (!this.metrics.errorsByCode[report.code]) {
@@ -509,11 +513,12 @@ export class LayeredErrorHandler implements IErrorHandler {
     if (!this.metrics.errorsBySeverity[report.severity]) {
       this.metrics.errorsBySeverity[report.severity] = 0;
     }
-    this.metrics.errorsBySeverity[report.severity]++;
+    const currentCount = this.metrics.errorsBySeverity[report.severity] || 0;
+    this.metrics.errorsBySeverity[report.severity] = currentCount + 1;
     
     // Update recovery success rate
     const recoveryAttempts = this.errorReports.filter(r => r.recoveryAttempted).length;
-    const recoverySuccesses = this.errorReports.filter(r => r.recoverySuccessful).length;
+    const recoverySuccesses = this.errorReports.filter(r => r.recoverySuccessful === true).length;
     this.metrics.recoverySuccessRate = recoveryAttempts > 0 ? recoverySuccesses / recoveryAttempts : 0;
   }
 

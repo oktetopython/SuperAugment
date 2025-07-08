@@ -5,7 +5,7 @@
  * request/response logging, performance metrics, and error tracking.
  */
 
-import { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
+import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
 
 export interface LoggingOptions {
   logRequests: boolean;
@@ -190,7 +190,7 @@ export class LoggingMiddleware implements IMiddleware {
     return 'very-slow';
   }
 
-  shouldRun(context: MiddlewareContext): boolean {
+  shouldRun(_context: MiddlewareContext): boolean {
     // Always run logging middleware unless explicitly disabled
     return true;
   }

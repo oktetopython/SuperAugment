@@ -6,7 +6,7 @@
  */
 
 import { logger } from '../utils/logger.js';
-import {
+import type {
   IMiddleware,
   IMiddlewareManager,
   ToolContext,
@@ -87,7 +87,7 @@ export class MiddlewareManager implements IMiddlewareManager {
         },
         set: async (key: string, value: any, ttl?: number) => {
           if (this.cacheProvider) {
-            await this.cacheProvider.set(key, value, { ttl });
+            await this.cacheProvider.set(key, value, ttl !== undefined ? { ttl } : {});
           }
         },
         has: async (key: string) => {
@@ -129,7 +129,8 @@ export class MiddlewareManager implements IMiddlewareManager {
           }
         }
 
-        const middleware = enabledMiddleware[index++];
+        const middleware = enabledMiddleware[index++]!; // Safe because we checked index < length above
+
         const middlewareStartTime = Date.now();
 
         try {
@@ -199,15 +200,20 @@ export class MiddlewareManager implements IMiddlewareManager {
         });
       }
 
-      return {
+      const executionResult: MiddlewareExecutionResult = {
         success: result.success,
         result: result.data,
-        error: result.error,
         executedMiddleware,
         skippedMiddleware,
         totalDuration,
         middlewareDurations,
       };
+      
+      if (result.error) {
+        executionResult.error = result.error;
+      }
+      
+      return executionResult;
     } catch (error) {
       const totalDuration = Date.now() - startTime;
       
