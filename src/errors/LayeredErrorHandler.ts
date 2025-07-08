@@ -88,7 +88,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     averageRecoveryTime: 0,
   };
   private errorCallbacks: Array<(report: ErrorReport) => void> = [];
-  private recoveryCallbacks: Array<(report: ErrorReport, result: any) => void> = [];
+  private recoveryCallbacks: Array<(report: ErrorReport, result: unknown) => void> = [];
 
   async initialize(): Promise<void> {
     // Register default error layers
@@ -249,7 +249,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     context: IErrorContext
   ): Promise<{
     recovered: boolean;
-    result?: any;
+    result?: unknown;
     strategy?: string;
     attempts: number;
   }> {
@@ -302,7 +302,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     const error = this.createErrorForCode(message, code, context || {} as ErrorContext, cause);
     
     if (cause) {
-      (error as any).cause = cause;
+      (error as Error & { cause?: Error }).cause = cause;
     }
     
     return error;
@@ -380,7 +380,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     this.errorCallbacks.push(callback);
   }
 
-  onRecovery(callback: (report: ErrorReport, result: any) => void): void {
+  onRecovery(callback: (report: ErrorReport, result: unknown) => void): void {
     this.recoveryCallbacks.push(callback);
   }
 

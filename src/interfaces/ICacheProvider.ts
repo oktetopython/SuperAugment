@@ -4,7 +4,7 @@
  * Defines the contract for caching services with TTL and LRU support
  */
 
-export interface CacheEntry<T = any> {
+export interface CacheEntry<T = unknown> {
   key: string;
   value: T;
   timestamp: Date;
@@ -52,12 +52,12 @@ export interface ICacheProvider {
   /**
    * Get a value from cache
    */
-  get<T = any>(key: string): Promise<T | undefined>;
+  get<T = unknown>(key: string): Promise<T | undefined>;
 
   /**
    * Set a value in cache
    */
-  set<T = any>(
+  set<T = unknown>(
     key: string,
     value: T,
     options?: {
@@ -84,12 +84,12 @@ export interface ICacheProvider {
   /**
    * Get multiple values from cache
    */
-  getMany<T = any>(keys: string[]): Promise<Array<T | undefined>>;
+  getMany<T = unknown>(keys: string[]): Promise<Array<T | undefined>>;
 
   /**
    * Set multiple values in cache
    */
-  setMany<T = any>(
+  setMany<T = unknown>(
     entries: Array<{
       key: string;
       value: T;
@@ -106,12 +106,12 @@ export interface ICacheProvider {
   /**
    * Get cache entry with metadata
    */
-  getEntry<T = any>(key: string): Promise<CacheEntry<T> | undefined>;
+  getEntry<T = unknown>(key: string): Promise<CacheEntry<T> | undefined>;
 
   /**
    * Get all cache entries matching query
    */
-  query<T = any>(query: CacheQuery): Promise<CacheEntry<T>[]>;
+  query<T = unknown>(query: CacheQuery): Promise<CacheEntry<T>[]>;
 
   /**
    * Get all cache keys
@@ -173,7 +173,7 @@ export interface ICacheProvider {
    */
   onEvent(
     event: 'hit' | 'miss' | 'set' | 'delete' | 'expire' | 'evict',
-    callback: (key: string, value?: any) => void
+    callback: (key: string, value?: unknown) => void
   ): void;
 
   /**
@@ -181,7 +181,7 @@ export interface ICacheProvider {
    */
   offEvent(
     event: 'hit' | 'miss' | 'set' | 'delete' | 'expire' | 'evict',
-    callback: (key: string, value?: any) => void
+    callback: (key: string, value?: unknown) => void
   ): void;
 
   /**

@@ -77,7 +77,7 @@ export interface ErrorContext {
   lineNumber?: number;
   columnNumber?: number;
   stackTrace?: string;
-  additionalInfo?: Record<string, any>;
+  additionalInfo?: Record<string, unknown>;
   timestamp?: Date;
   userId?: string;
   sessionId?: string;
@@ -123,7 +123,7 @@ export class SuperAugmentError extends Error {
   /**
    * Convert error to JSON for logging and serialization
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       name: this.name,
       message: this.message,
@@ -298,7 +298,7 @@ export class PerformanceError extends SuperAugmentError {
 /**
  * Utility function to check if an error is a SuperAugment error
  */
-export function isSuperAugmentError(error: any): error is SuperAugmentError {
+export function isSuperAugmentError(error: unknown): error is SuperAugmentError {
   return error instanceof SuperAugmentError;
 }
 

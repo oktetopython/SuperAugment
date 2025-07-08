@@ -12,20 +12,52 @@ export interface Persona {
   tools?: string[];
 }
 
+export interface ToolParameter {
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  description?: string;
+  required?: boolean;
+  default?: unknown;
+  enum?: unknown[];
+}
+
+export interface ToolExample {
+  name: string;
+  description?: string;
+  input: Record<string, unknown>;
+  output?: unknown;
+}
+
 export interface ToolConfig {
   name: string;
   description: string;
   category: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, ToolParameter>;
   personas?: string[];
-  examples?: any[];
+  examples?: ToolExample[];
+}
+
+export interface Pattern {
+  name: string;
+  pattern: string;
+  description?: string;
+  category?: string;
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface Settings {
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  cacheEnabled?: boolean;
+  maxCacheSize?: number;
+  timeout?: number;
+  retryAttempts?: number;
+  [key: string]: unknown;
 }
 
 export interface Config {
   personas: Persona[];
   tools: ToolConfig[];
-  patterns?: Record<string, any>;
-  settings?: Record<string, any>;
+  patterns?: Record<string, Pattern>;
+  settings?: Settings;
 }
 
 export interface ConfigChangeEvent {

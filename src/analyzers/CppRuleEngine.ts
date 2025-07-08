@@ -22,6 +22,21 @@ export interface RuleViolation {
 }
 
 /**
+ * Rule configuration interface
+ */
+export interface RuleConfig {
+  id: string;
+  name: string;
+  description: string;
+  severity: 'error' | 'warning' | 'info';
+  category: string;
+  cppStandards: string[];
+  pattern?: string;
+  message?: string;
+  suggestion?: string;
+}
+
+/**
  * C++ rule definition
  */
 export interface CppRule {
@@ -580,7 +595,7 @@ export class CppRuleEngine {
   /**
    * Create a rule check function from configuration
    */
-  private createRuleFromConfig(ruleConfig: any): CppRule['check'] {
+  private createRuleFromConfig(ruleConfig: RuleConfig): CppRule['check'] {
     return (line: string, lineNumber: number, _content: string, filePath: string) => {
       // Simplified rule creation from config
       // In a real implementation, this would support more sophisticated rule definitions
