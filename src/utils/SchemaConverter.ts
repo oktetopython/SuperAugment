@@ -6,12 +6,12 @@
  */
 
 import { z } from 'zod';
-import { logger } from './logger.js';
+import { logger } from './logger';
 import {
   ErrorCode,
   ErrorSeverity,
   SuperAugmentError,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 /**
  * JSON Schema type definitions

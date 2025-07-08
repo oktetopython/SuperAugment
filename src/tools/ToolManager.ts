@@ -1,23 +1,23 @@
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import { ConfigManager } from '../config/ConfigManager.js';
-import { logger } from '../utils/logger.js';
-import { SchemaConverter } from '../utils/SchemaConverter.js';
+import type { Tool } from '@modelcontextprotocol/sdk/types';
+import { ConfigManager } from '../config/ConfigManager';
+import { logger } from '../utils/logger';
+import { SchemaConverter } from '../utils/SchemaConverter';
 import {
   SuperAugmentError,
   ToolExecutionError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
-import { globalErrorHandler } from '../errors/ErrorHandler.js';
+} from '../errors/ErrorTypes';
+import { globalErrorHandler } from '../errors/ErrorHandler';
 
 // Import tool implementations
-import { AnalyzeCodeTool } from './analysis/AnalyzeCodeTool.js';
-import { AnalyzeProjectTool } from './analysis/AnalyzeProjectTool.js';
-import { ReviewCodeTool } from './analysis/ReviewCodeTool.js';
-import { SecurityScanTool } from './analysis/SecurityScanTool.js';
-import { AnalyzeCppTool } from './analysis/AnalyzeCppTool.js';
-import { BuildProjectTool } from './build/BuildProjectTool.js';
-import { TestProjectTool } from './build/TestProjectTool.js';
-import { DeployApplicationTool } from './build/DeployApplicationTool.js';
+import { AnalyzeCodeTool } from './analysis/AnalyzeCodeTool';
+import { AnalyzeProjectTool } from './analysis/AnalyzeProjectTool';
+import { ReviewCodeTool } from './analysis/ReviewCodeTool';
+import { SecurityScanTool } from './analysis/SecurityScanTool';
+import { AnalyzeCppTool } from './analysis/AnalyzeCppTool';
+import { BuildProjectTool } from './build/BuildProjectTool';
+import { TestProjectTool } from './build/TestProjectTool';
+import { DeployApplicationTool } from './build/DeployApplicationTool';
 
 /**
  * Base interface for all SuperAugment tools

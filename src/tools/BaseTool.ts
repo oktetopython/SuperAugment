@@ -6,16 +6,16 @@
  */
 
 import { z } from 'zod';
-import type { SuperAugmentTool } from './ToolManager.js';
-import type { ConfigManager } from '../config/ConfigManager.js';
-import { logger } from '../utils/logger.js';
+import type { SuperAugmentTool } from './ToolManager';
+import type { ConfigManager } from '../config/ConfigManager';
+import { logger } from '../utils/logger';
 import {
   SuperAugmentError,
   ToolExecutionError,
   ErrorCode,
   type ErrorContext,
-} from '../errors/ErrorTypes.js';
-import { globalErrorHandler } from '../errors/ErrorHandler.js';
+} from '../errors/ErrorTypes';
+import { globalErrorHandler } from '../errors/ErrorHandler';
 
 /**
  * Tool execution context for tracking and monitoring

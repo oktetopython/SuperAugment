@@ -6,12 +6,12 @@
  */
 
 import { join, dirname } from 'path';
-import { FileSystemManager } from '../utils/FileSystemManager.js';
-import { logger } from '../utils/logger.js';
+import { FileSystemManager } from '../utils/FileSystemManager';
+import { logger } from '../utils/logger';
 import {
   AnalysisError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 /**
  * C++ analysis result interfaces
@@ -145,6 +145,30 @@ export interface SecurityAnalysis {
 }
 
 /**
+ * Semantic analysis result
+ */
+export interface SemanticAnalysis {
+  symbols: {
+    name: string;
+    type: string;
+    scope: string;
+    line: number;
+  }[];
+  typeChecking: {
+    errors: string[];
+    warnings: string[];
+  };
+  scopeAnalysis: {
+    scopes: string[];
+    issues: string[];
+  };
+  templateAnalysis: {
+    templates: string[];
+    instantiations: string[];
+  };
+}
+
+/**
  * Dependency analysis result
  */
 export interface DependencyAnalysis {
@@ -208,7 +232,7 @@ export class CppAnalyzer {
   /**
    * Analyze C++ semantics (placeholder implementation)
    */
-  async analyzeSemantics(filePath: string, cppStandard: string): Promise<any> {
+  async analyzeSemantics(filePath: string, cppStandard: string): Promise<SemanticAnalysis> {
     // Placeholder for semantic analysis
     // In a real implementation, this would involve:
     // - Type checking
@@ -218,12 +242,18 @@ export class CppAnalyzer {
     
     logger.info(`Semantic analysis for ${filePath} using ${cppStandard} standard`);
     return {
-      filePath,
-      cppStandard,
-      semanticInfo: {
-        typeChecking: 'not implemented',
-        scopeAnalysis: 'not implemented',
-        symbolResolution: 'not implemented'
+      symbols: [],
+      typeChecking: {
+        errors: [],
+        warnings: ['Semantic analysis not fully implemented']
+      },
+      scopeAnalysis: {
+        scopes: [],
+        issues: []
+      },
+      templateAnalysis: {
+        templates: [],
+        instantiations: []
       }
     };
   }

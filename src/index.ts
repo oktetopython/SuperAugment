@@ -7,10 +7,10 @@
  * development tools, cognitive personas, and intelligent workflows.
  */
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { SuperAugmentServer } from './server.js';
-import { logger } from './utils/logger.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
+import { SuperAugmentServer } from './server';
+import { logger } from './utils/logger';
 
 async function main(): Promise<void> {
   try {

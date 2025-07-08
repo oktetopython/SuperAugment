@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { logger } from '../../utils/logger';
 
 const TestProjectInputSchema = z.object({
   type: z.enum(['unit', 'integration', 'e2e', 'performance', 'security']).describe('Type of tests to run'),

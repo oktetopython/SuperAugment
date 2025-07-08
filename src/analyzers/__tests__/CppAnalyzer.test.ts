@@ -6,16 +6,16 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { CppAnalyzer } from '../CppAnalyzer.js';
-import { FileSystemManager } from '../../utils/FileSystemManager.js';
-import { AnalysisError } from '../../errors/ErrorTypes.js';
+import { CppAnalyzer } from '../CppAnalyzer';
+import { FileSystemManager } from '../../utils/FileSystemManager';
+import { AnalysisError } from '../../errors/ErrorTypes';
 import { 
   TestEnvironment, 
   TestDataGenerator, 
   MockFactory,
   TestAssertions,
   PerformanceTestUtils 
-} from '../../test-utils/TestHelpers.js';
+} from '../../test-utils/TestHelpers';
 
 describe('CppAnalyzer', () => {
   let analyzer: CppAnalyzer;

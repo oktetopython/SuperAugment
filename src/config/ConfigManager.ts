@@ -3,13 +3,13 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import YAML from 'yaml';
 import { z } from 'zod';
-import { logger } from '../utils/logger.js';
-import { ConfigValidator, type ValidationResult } from './ConfigValidator.js';
-import { ConfigWatcher, type ConfigChangeEvent } from './ConfigWatcher.js';
+import { logger } from '../utils/logger';
+import { ConfigValidator, type ValidationResult } from './ConfigValidator';
+import { ConfigWatcher, type ConfigChangeEvent } from './ConfigWatcher';
 import {
   ConfigurationError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -25,24 +25,33 @@ const PersonaSchema = z.object({
   tools: z.array(z.string()).optional(),
 });
 
+const PatternSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  pattern: z.string(),
+  category: z.string().optional(),
+  examples: z.array(z.string()).optional(),
+});
+
 const ToolConfigSchema = z.object({
   name: z.string(),
   description: z.string(),
   category: z.string(),
-  parameters: z.record(z.any()),
+  parameters: z.record(z.unknown()),
   personas: z.array(z.string()).optional(),
-  examples: z.array(z.any()).optional(),
+  examples: z.array(z.string()).optional(),
 });
 
 const ConfigSchema = z.object({
   personas: z.array(PersonaSchema),
   tools: z.array(ToolConfigSchema),
-  patterns: z.record(z.any()).optional(),
-  settings: z.record(z.any()).optional(),
+  patterns: z.record(PatternSchema).optional(),
+  settings: z.record(z.unknown()).optional(),
 });
 
 export type Persona = z.infer<typeof PersonaSchema>;
 export type ToolConfig = z.infer<typeof ToolConfigSchema>;
+export type Pattern = z.infer<typeof PatternSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
 
 /**
@@ -222,7 +231,7 @@ export class ConfigManager {
   /**
    * Load patterns configuration
    */
-  private async loadPatterns(): Promise<Record<string, any>> {
+  private async loadPatterns(): Promise<Record<string, Pattern>> {
     try {
       const patternsPath = join(this.configPath, 'patterns.yml');
       const content = await readFile(patternsPath, 'utf-8');
@@ -236,7 +245,7 @@ export class ConfigManager {
   /**
    * Load settings configuration
    */
-  private async loadSettings(): Promise<Record<string, any>> {
+  private async loadSettings(): Promise<Record<string, unknown>> {
     try {
       const settingsPath = join(this.configPath, 'settings.yml');
       const content = await readFile(settingsPath, 'utf-8');

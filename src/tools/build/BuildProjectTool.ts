@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { logger } from '../../utils/logger';
 
 const BuildProjectInputSchema = z.object({
   type: z.enum(['react', 'node', 'python', 'rust', 'go', 'java']).describe('Project type to build'),

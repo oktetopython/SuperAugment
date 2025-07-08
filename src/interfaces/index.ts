@@ -4,8 +4,8 @@
  * Centralized export of all core service interfaces
  */
 
-export * from './IConfigProvider.js';
-export * from './IFileSystemProvider.js';
-export * from './IErrorHandler.js';
-export * from './ICacheProvider.js';
-export * from './IPerformanceMonitor.js';
+export * from './IConfigProvider';
+export * from './IFileSystemProvider';
+export * from './IErrorHandler';
+export * from './ICacheProvider';
+export * from './IPerformanceMonitor';

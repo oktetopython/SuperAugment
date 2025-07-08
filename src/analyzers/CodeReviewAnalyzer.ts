@@ -5,8 +5,8 @@
  * security scanning, performance analysis, and best practices validation.
  */
 
-import { logger } from '../utils/logger.js';
-import type { FileInfo } from '../utils/FileSystemManager.js';
+import { logger } from '../utils/logger';
+import type { FileInfo } from '../utils/FileSystemManager';
 
 export interface ReviewFinding {
   id: string;

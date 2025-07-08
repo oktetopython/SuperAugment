@@ -1,4 +1,4 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { Server } from '@modelcontextprotocol/sdk/server/index';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -6,13 +6,13 @@ import {
   ReadResourceRequestSchema,
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+} from '@modelcontextprotocol/sdk/types';
 
-import { ToolManager } from './tools/ToolManager.js';
-import { ResourceManager } from './resources/ResourceManager.js';
-import { PromptManager } from './prompts/PromptManager.js';
-import { ConfigManager } from './config/ConfigManager.js';
-import { logger } from './utils/logger.js';
+import { ToolManager } from './tools/ToolManager';
+import { ResourceManager } from './resources/ResourceManager';
+import { PromptManager } from './prompts/PromptManager';
+import { ConfigManager } from './config/ConfigManager';
+import { logger } from './utils/logger';
 
 /**
  * SuperAugment MCP Server implementation

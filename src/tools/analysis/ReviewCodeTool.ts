@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { FileSystemManager, type FileInfo } from '../../utils/FileSystemManager.js';
-import { CodeReviewAnalyzer, type ReviewResult } from '../../analyzers/CodeReviewAnalyzer.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { FileSystemManager, type FileInfo } from '../../utils/FileSystemManager';
+import { CodeReviewAnalyzer, type ReviewResult } from '../../analyzers/CodeReviewAnalyzer';
+import { logger } from '../../utils/logger';
 
 const ReviewCodeInputSchema = z.object({
   pullRequest: z.number().optional().describe('Pull request number to review'),

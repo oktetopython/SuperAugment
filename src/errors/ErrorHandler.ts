@@ -5,7 +5,7 @@
  * for the SuperAugment MCP server.
  */
 
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import {
   SuperAugmentError,
   ErrorCode,
@@ -13,7 +13,7 @@ import {
   type ErrorContext,
   isSuperAugmentError,
   wrapError,
-} from './ErrorTypes.js';
+} from './ErrorTypes';
 
 /**
  * Error handling configuration
@@ -50,6 +50,20 @@ interface ErrorMetrics {
   recentErrors: SuperAugmentError[];
   circuitBreakerState: 'closed' | 'open' | 'half-open';
   consecutiveFailures: number;
+  lastFailureTime?: Date;
+}
+
+/**
+ * Error statistics interface
+ */
+export interface ErrorStatistics {
+  totalErrors: number;
+  errorsByCode: Record<string, number>;
+  errorsBySeverity: Record<string, number>;
+  errorsByTool: Record<string, number>;
+  circuitBreakerState: 'closed' | 'open' | 'half-open';
+  consecutiveFailures: number;
+  recentErrorsCount: number;
   lastFailureTime?: Date;
 }
 
@@ -109,11 +123,11 @@ export class ErrorHandler {
   /**
    * Handle an error with full processing pipeline
    */
-  async handleError(
+  async handleError<T = unknown>(
     error: unknown,
     context: ErrorContext = {},
-    operation?: () => Promise<any>
-  ): Promise<any> {
+    operation?: () => Promise<T>
+  ): Promise<T | void> {
     const superAugmentError = this.normalizeError(error, context);
     
     // Update metrics
@@ -146,11 +160,11 @@ export class ErrorHandler {
   /**
    * Execute operation with retry logic
    */
-  private async executeWithRetry(
-    operation: () => Promise<any>,
+  private async executeWithRetry<T>(
+    operation: () => Promise<T>,
     originalError: SuperAugmentError,
     context: ErrorContext
-  ): Promise<any> {
+  ): Promise<T> {
     let lastError = originalError;
     
     for (let attempt = 1; attempt <= this.config.maxRetryAttempts; attempt++) {
@@ -351,7 +365,7 @@ export class ErrorHandler {
   /**
    * Get error statistics for monitoring
    */
-  getErrorStatistics(): Record<string, any> {
+  getErrorStatistics(): ErrorStatistics {
     return {
       totalErrors: this.metrics.totalErrors,
       errorsByCode: Object.fromEntries(this.metrics.errorsByCode),
@@ -389,16 +403,16 @@ export async function handleAsyncError<T>(
  * Decorator for automatic error handling in class methods
  */
 export function HandleErrors(context: ErrorContext = {}) {
-  return function (_target: any, _propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: unknown, _propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       try {
         return await method.apply(this, args);
       } catch (error) {
         const errorContext = {
           ...context,
-          toolName: context.toolName || (this as any).name || this.constructor.name,
+          toolName: context.toolName || (this as { name?: string }).name || this.constructor.name,
         };
         await globalErrorHandler.handleError(error, errorContext);
       }

@@ -1,5 +1,5 @@
-import { AnalyzeCodeTool } from '../analysis/AnalyzeCodeTool.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
+import { AnalyzeCodeTool } from '../analysis/AnalyzeCodeTool';
+import { ConfigManager } from '../../config/ConfigManager';
 
 // Mock the ConfigManager
 jest.mock('../../config/ConfigManager.js');

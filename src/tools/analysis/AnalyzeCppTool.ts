@@ -8,15 +8,15 @@
 
 import { z } from 'zod';
 import { basename } from 'path';
-import { BaseTool, type ToolExecutionContext, type ToolExecutionResult } from '../BaseTool.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { FileSystemManager } from '../../utils/FileSystemManager.js';
-import { CppAnalyzer } from '../../analyzers/CppAnalyzer.js';
-import { CppRuleEngine, type RuleViolation } from '../../analyzers/CppRuleEngine.js';
+import { BaseTool, type ToolExecutionContext, type ToolExecutionResult } from '../BaseTool';
+import { ConfigManager } from '../../config/ConfigManager';
+import { FileSystemManager } from '../../utils/FileSystemManager';
+import { CppAnalyzer } from '../../analyzers/CppAnalyzer';
+import { CppRuleEngine, type RuleViolation } from '../../analyzers/CppRuleEngine';
 import {
   AnalysisError,
   ErrorCode,
-} from '../../errors/ErrorTypes.js';
+} from '../../errors/ErrorTypes';
 
 /**
  * C++ analysis options schema

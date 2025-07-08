@@ -7,14 +7,14 @@
  */
 
 import { randomUUID } from 'crypto';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import type {
   IErrorHandler,
   ErrorContext as IErrorContext,
   ErrorRecoveryStrategy,
   ErrorReport,
   ErrorMetrics,
-} from '../interfaces/IErrorHandler.js';
+} from '../interfaces/IErrorHandler';
 import {
   ErrorCode,
   ErrorSeverity,
@@ -23,8 +23,8 @@ import {
   AnalysisError,
   ConfigurationError,
   FileSystemError,
-} from './ErrorTypes.js';
-import type { ErrorContext } from './ErrorTypes.js';
+} from './ErrorTypes';
+import type { ErrorContext } from './ErrorTypes';
 
 /**
  * Error layer interface

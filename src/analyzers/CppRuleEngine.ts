@@ -5,7 +5,7 @@
  * supporting different C++ standards and custom rule sets.
  */
 
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import { readFile } from 'fs/promises';
 
 /**

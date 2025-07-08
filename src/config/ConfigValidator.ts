@@ -9,11 +9,11 @@ import { z } from 'zod';
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import YAML from 'yaml';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import {
   ConfigurationError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 /**
  * Validation result interface
@@ -37,7 +37,7 @@ export interface ValidationError {
   message: string;
   path: string;
   severity: 'error' | 'warning';
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   suggestion?: string;
 }
 
@@ -49,12 +49,29 @@ export interface ValidationWarning {
   message: string;
   path: string;
   suggestion: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
  * Enhanced schema definitions with detailed validation
  */
+
+/**
+ * Persona and Tool interfaces
+ */
+interface Persona {
+  name: string;
+  description?: string;
+  tools?: string[];
+  [key: string]: unknown;
+}
+
+interface Tool {
+  name: string;
+  description?: string;
+  category?: string;
+  [key: string]: unknown;
+}
 
 // Persona validation schema
 const PersonaSchema = z.object({
@@ -287,7 +304,7 @@ export class ConfigValidator {
       }
 
     } catch (error) {
-      if ((error as any).code === 'ENOENT') {
+      if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
         errors.push({
           code: 'PERSONAS_FILE_MISSING',
           message: 'Personas configuration file not found',
@@ -394,7 +411,7 @@ export class ConfigValidator {
       }
 
     } catch (error) {
-      if ((error as any).code === 'ENOENT') {
+      if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
         errors.push({
           code: 'TOOLS_FILE_MISSING',
           message: 'Tools configuration file not found',
@@ -477,7 +494,7 @@ export class ConfigValidator {
       }
 
     } catch (error) {
-      if ((error as any).code !== 'ENOENT') {
+      if (!(error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT')) {
         errors.push({
           code: 'SETTINGS_READ_ERROR',
           message: `Failed to read settings file: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -528,7 +545,7 @@ export class ConfigValidator {
       }
 
     } catch (error) {
-      if ((error as any).code !== 'ENOENT') {
+      if (!(error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT')) {
         errors.push({
           code: 'PATTERNS_READ_ERROR',
           message: `Failed to read patterns file: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -563,8 +580,8 @@ export class ConfigValidator {
       ]);
 
       if (personasData?.personas && toolsData?.tools) {
-        const personaNames = new Set(personasData.personas.map((p: any) => p.name));
-        const toolNames = new Set(toolsData.tools.map((t: any) => t.name));
+        const personaNames = new Set((personasData.personas as Persona[]).map(p => p.name));
+        const toolNames = new Set((toolsData.tools as Tool[]).map(t => t.name));
 
         // Check if personas reference valid tools
         for (const persona of personasData.personas) {
@@ -630,7 +647,7 @@ export class ConfigValidator {
   /**
    * Load and parse YAML file
    */
-  private async loadYamlFile(filePath: string): Promise<any> {
+  private async loadYamlFile(filePath: string): Promise<Record<string, unknown> | null> {
     try {
       const content = await readFile(filePath, 'utf-8');
       return YAML.parse(content);

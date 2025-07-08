@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'crypto';
-import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
+import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces';
 
 export interface CachingOptions {
   enabled: boolean;

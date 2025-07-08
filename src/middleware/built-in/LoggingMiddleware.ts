@@ -5,7 +5,7 @@
  * request/response logging, performance metrics, and error tracking.
  */
 
-import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces.js';
+import type { IMiddleware, MiddlewareContext, MiddlewareResult, NextFunction } from '../interfaces';
 
 export interface LoggingOptions {
   logRequests: boolean;

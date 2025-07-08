@@ -6,11 +6,11 @@
  */
 
 import { jest } from '@jest/globals';
-import { ConfigManager } from '../config/ConfigManager.js';
-import { FileSystemManager } from '../utils/FileSystemManager.js';
-import { SchemaConverter } from '../utils/SchemaConverter.js';
-import { ErrorHandler } from '../errors/ErrorHandler.js';
-import { ToolManager } from '../tools/ToolManager.js';
+import { ConfigManager } from '../config/ConfigManager';
+import { FileSystemManager } from '../utils/FileSystemManager';
+import { SchemaConverter } from '../utils/SchemaConverter';
+import { ErrorHandler } from '../errors/ErrorHandler';
+import { ToolManager } from '../tools/ToolManager';
 import { z } from 'zod';
 
 /**

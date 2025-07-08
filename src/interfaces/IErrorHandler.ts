@@ -4,7 +4,7 @@
  * Defines the contract for error handling services with recovery mechanisms
  */
 
-import { ErrorCode } from '../errors/ErrorTypes.js';
+import { ErrorCode } from '../errors/ErrorTypes';
 
 export interface ErrorContext {
   operation: string;

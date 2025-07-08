@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { FileSystemManager, type FileInfo } from '../../utils/FileSystemManager.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { FileSystemManager, type FileInfo } from '../../utils/FileSystemManager';
+import { logger } from '../../utils/logger';
 
 const AnalyzeCodeInputSchema = z.object({
   files: z.array(z.string()).optional().describe('Array of file paths or glob patterns to analyze'),

@@ -7,9 +7,9 @@
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { z } from 'zod';
-import { SchemaConverter } from '../SchemaConverter.js';
-import { ValidationError } from '../../errors/ErrorTypes.js';
-import { TestEnvironment, TestDataGenerator, TestAssertions } from '../../test-utils/TestHelpers.js';
+import { SchemaConverter } from '../SchemaConverter';
+import { ValidationError } from '../../errors/ErrorTypes';
+import { TestEnvironment, TestDataGenerator, TestAssertions } from '../../test-utils/TestHelpers';
 
 describe('SchemaConverter', () => {
   let converter: SchemaConverter;

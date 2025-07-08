@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { FileSystemManager, type ProjectStructure } from '../../utils/FileSystemManager.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { FileSystemManager, type ProjectStructure } from '../../utils/FileSystemManager';
+import { logger } from '../../utils/logger';
 
 const AnalyzeProjectInputSchema = z.object({
   projectPath: z.string().optional().describe('Project root path (defaults to current directory)'),

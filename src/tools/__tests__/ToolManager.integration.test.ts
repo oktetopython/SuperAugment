@@ -6,16 +6,16 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { ToolManager } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { ToolExecutionError } from '../../errors/ErrorTypes.js';
+import { ToolManager } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { ToolExecutionError } from '../../errors/ErrorTypes';
 import { 
   TestEnvironment, 
   MockFactory,
   TestAssertions,
   IntegrationTestHelpers,
   PerformanceTestUtils 
-} from '../../test-utils/TestHelpers.js';
+} from '../../test-utils/TestHelpers';
 
 describe('ToolManager Integration Tests', () => {
   let toolManager: ToolManager;

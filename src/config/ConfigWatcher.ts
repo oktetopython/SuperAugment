@@ -8,12 +8,12 @@
 import { watch, type FSWatcher } from 'fs';
 import { join } from 'path';
 import { EventEmitter } from 'events';
-import { logger } from '../utils/logger.js';
-import { ConfigValidator, type ValidationResult } from './ConfigValidator.js';
+import { logger } from '../utils/logger';
+import { ConfigValidator, type ValidationResult } from './ConfigValidator';
 import {
   ConfigurationError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 /**
  * Configuration change event types
@@ -176,7 +176,7 @@ export class ConfigWatcher extends EventEmitter {
 
     } catch (error) {
       // File might not exist, which is okay for optional files
-      if ((error as any).code === 'ENOENT') {
+      if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
         logger.debug(`Configuration file ${filename} does not exist, skipping watch`);
       } else {
         logger.error(`Failed to watch ${filename}`, { error, filePath });
@@ -343,7 +343,7 @@ export class ConfigWatcher extends EventEmitter {
         .map(file => ({
           name: file,
           path: join(backupDir, file),
-          stat: null as any,
+          stat: null as fs.Stats | null,
         }));
 
       // Get file stats for sorting by creation time

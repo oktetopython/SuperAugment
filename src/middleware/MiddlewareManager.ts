@@ -5,7 +5,7 @@
  * priority-based ordering, conditional execution, and performance monitoring.
  */
 
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import type {
   IMiddleware,
   IMiddlewareManager,
@@ -15,10 +15,10 @@ import type {
   MiddlewareExecutionResult,
   MiddlewareResult,
   NextFunction,
-} from './interfaces.js';
-import { container, ServiceIdentifiers } from '../core/Container.js';
-import type { ICacheProvider } from '../interfaces/ICacheProvider.js';
-import type { IPerformanceMonitor } from '../interfaces/IPerformanceMonitor.js';
+} from './interfaces';
+import { container, ServiceIdentifiers } from '../core/Container';
+import type { ICacheProvider } from '../interfaces/ICacheProvider';
+import type { IPerformanceMonitor } from '../interfaces/IPerformanceMonitor';
 
 /**
  * Middleware manager implementation

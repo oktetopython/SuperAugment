@@ -7,11 +7,11 @@
 
 import { readFile, stat } from 'fs/promises';
 import { createHash } from 'crypto';
-import { logger } from './logger.js';
+import { logger } from './logger';
 import {
   FileSystemError,
   ErrorCode,
-} from '../errors/ErrorTypes.js';
+} from '../errors/ErrorTypes';
 
 /**
  * Cache entry interface

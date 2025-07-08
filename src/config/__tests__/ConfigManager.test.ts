@@ -1,4 +1,4 @@
-import { ConfigManager } from '../ConfigManager.js';
+import { ConfigManager } from '../ConfigManager';
 import { readFile } from 'fs/promises';
 import YAML from 'yaml';
 

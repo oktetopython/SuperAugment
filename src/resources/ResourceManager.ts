@@ -1,6 +1,6 @@
-import type { Resource } from '@modelcontextprotocol/sdk/types.js';
-import { ConfigManager } from '../config/ConfigManager.js';
-import { logger } from '../utils/logger.js';
+import type { Resource } from '@modelcontextprotocol/sdk/types';
+import { ConfigManager } from '../config/ConfigManager';
+import { logger } from '../utils/logger';
 import YAML from 'yaml';
 
 /**

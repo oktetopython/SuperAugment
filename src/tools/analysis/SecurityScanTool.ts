@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import type { SuperAugmentTool } from '../ToolManager.js';
-import { ConfigManager } from '../../config/ConfigManager.js';
-import { logger } from '../../utils/logger.js';
+import type { SuperAugmentTool } from '../ToolManager';
+import { ConfigManager } from '../../config/ConfigManager';
+import { logger } from '../../utils/logger';
 
 const SecurityScanInputSchema = z.object({
   target: z.string().describe('Target to scan (file, directory, or application)'),
