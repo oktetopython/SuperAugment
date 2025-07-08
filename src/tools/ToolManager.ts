@@ -1,6 +1,13 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
+import {
+  SuperAugmentError,
+  ToolExecutionError,
+  ErrorCode,
+  ErrorSeverity,
+} from '../errors/ErrorTypes.js';
+import { globalErrorHandler } from '../errors/ErrorHandler.js';
 
 // Import tool implementations
 import { AnalyzeCodeTool } from './analysis/AnalyzeCodeTool.js';
@@ -84,22 +91,65 @@ export class ToolManager {
   }
 
   /**
-   * Call a specific tool
+   * Call a specific tool with enhanced error handling
    */
   async callTool(name: string, args: Record<string, any>): Promise<any> {
     const tool = this.tools.get(name);
     if (!tool) {
-      throw new Error(`Tool not found: ${name}`);
+      const error = new ToolExecutionError(
+        `Tool '${name}' not found. Available tools: ${Array.from(this.tools.keys()).join(', ')}`,
+        name,
+        ErrorCode.TOOL_NOT_FOUND,
+        { 
+          additionalInfo: { 
+            requestedTool: name,
+            availableTools: Array.from(this.tools.keys()),
+            providedArgs: args
+          } 
+        }
+      );
+      await globalErrorHandler.handleError(error, { toolName: name });
+      throw error; // This line should never be reached
     }
 
     try {
-      logger.info(`Executing tool: ${name}`, { args });
+      logger.info(`Executing tool: ${name}`, { 
+        toolName: name,
+        argsCount: Object.keys(args).length,
+        // Don't log full args to avoid sensitive data in logs
+      });
+      
       const result = await tool.execute(args);
-      logger.info(`Tool execution completed: ${name}`);
+      
+      logger.info(`Tool execution completed successfully: ${name}`, {
+        toolName: name,
+        hasResult: !!result,
+        resultType: typeof result,
+      });
+      
       return result;
     } catch (error) {
-      logger.error(`Tool execution failed: ${name}`, error);
-      throw error;
+      // Enhanced error context for tool execution failures
+      const errorContext = {
+        toolName: name,
+        additionalInfo: {
+          argsProvided: Object.keys(args),
+          toolExists: true,
+          executionStage: 'tool_execution',
+        },
+      };
+
+      // Use global error handler for consistent error processing
+      try {
+        await globalErrorHandler.handleError(error, errorContext);
+      } catch (handledError) {
+        // Log the final error state
+        logger.error(`Tool execution failed: ${name}`, {
+          toolName: name,
+          error: handledError instanceof SuperAugmentError ? handledError.toJSON() : handledError,
+        });
+        throw handledError;
+      }
     }
   }
 
