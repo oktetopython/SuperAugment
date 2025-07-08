@@ -13,8 +13,7 @@ import {
   SuperAugmentError,
   ToolExecutionError,
   ErrorCode,
-  ErrorSeverity,
-  ErrorContext,
+  type ErrorContext,
 } from '../errors/ErrorTypes.js';
 import { globalErrorHandler } from '../errors/ErrorHandler.js';
 
@@ -228,7 +227,7 @@ export abstract class BaseTool implements SuperAugmentTool {
    */
   protected async postExecute(
     context: ToolExecutionContext,
-    result: ToolExecutionResult
+    _result: ToolExecutionResult
   ): Promise<void> {
     const executionTime = Date.now() - context.startTime.getTime();
     
@@ -399,7 +398,10 @@ export abstract class BaseTool implements SuperAugmentTool {
         },
         ...additionalContent,
       ],
-      metadata,
+      metadata: {
+        executionTime: 0,
+        ...metadata,
+      },
     };
   }
 
@@ -428,9 +430,8 @@ export abstract class BaseTool implements SuperAugmentTool {
     return {
       content,
       metadata: {
-        error: true,
-        errorCode: error.code,
-        errorSeverity: error.severity,
+        executionTime: 0,
+        warnings: [`Error: ${error.code} - ${error.severity}`],
       },
     };
   }

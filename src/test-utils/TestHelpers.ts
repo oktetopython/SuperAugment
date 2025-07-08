@@ -68,7 +68,7 @@ export class TestAssertions {
     properties: (keyof T)[]
   ): void {
     for (const prop of properties) {
-      expect(obj).toHaveProperty(prop);
+      expect(obj).toHaveProperty(prop as string);
     }
   }
 
@@ -225,7 +225,7 @@ export class MockFactory {
    */
   static createMockErrorHandler(): jest.Mocked<ErrorHandler> {
     const mock = {
-      handleError: jest.fn().mockResolvedValue(undefined),
+      handleError: jest.fn().mockRejectedValue(new Error('Mock error')),
       getStats: jest.fn().mockReturnValue({
         totalErrors: 0,
         errorsByType: {},
@@ -387,9 +387,9 @@ export class TestEnvironment {
     this.originalEnv = { ...process.env };
 
     // Set test environment variables
-    process.env.NODE_ENV = 'test';
-    process.env.LOG_LEVEL = testConfig.enableLogging ? 'debug' : 'silent';
-    process.env.TEMP_DIR = testConfig.tempDirectory;
+    process.env['NODE_ENV'] = 'test';
+    process.env['LOG_LEVEL'] = testConfig.enableLogging ? 'debug' : 'silent';
+    process.env['TEMP_DIR'] = testConfig.tempDirectory;
 
     // Mock console if logging is disabled
     if (!testConfig.enableLogging) {
@@ -425,7 +425,7 @@ export class TestEnvironment {
   /**
    * Clean up temporary test directory
    */
-  static async cleanupTempDir(path: string): Promise<void> {
+  static async cleanupTempDir(_path: string): Promise<void> {
     // In a real implementation, you would remove the directory
     // For testing, this is a no-op
   }

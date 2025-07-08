@@ -34,6 +34,7 @@ export enum ErrorCode {
   CONFIG_VALIDATION_FAILED = 1301,
   CONFIG_FILE_NOT_FOUND = 1302,
   CONFIG_PARSE_ERROR = 1303,
+  VALIDATION_FAILED = 1304,
 
   // Analysis errors (1400-1499)
   ANALYSIS_FAILED = 1400,
@@ -109,7 +110,9 @@ export class SuperAugmentError extends Error {
       timestamp: context.timestamp || new Date(),
     };
     this.isRetryable = isRetryable;
-    this.originalError = originalError;
+    if (originalError) {
+      this.originalError = originalError;
+    }
 
     // Maintain proper stack trace
     if (Error.captureStackTrace) {

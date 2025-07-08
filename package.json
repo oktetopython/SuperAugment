@@ -1,7 +1,7 @@
 {
   "name": "superaugment",
-  "version": "1.0.2",
-  "description": "A powerful MCP server that enhances VS Code Augment with specialized development tools, cognitive personas, and intelligent workflows",
+  "version": "2.0.0",
+  "description": "Enterprise-grade MCP server with world-class C++ analysis, robust error handling, and production-ready architecture for VS Code Augment",
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -10,8 +10,15 @@
     "development-tools",
     "ai-assistant",
     "typescript",
+    "cpp-analysis",
     "code-analysis",
-    "cognitive-personas"
+    "cognitive-personas",
+    "enterprise",
+    "production-ready",
+    "error-handling",
+    "performance",
+    "testing",
+    "schema-conversion"
   ],
   "homepage": "https://github.com/oktetopython/SuperAugment#readme",
   "repository": {

@@ -5,15 +5,8 @@
  * supporting different C++ standards and custom rule sets.
  */
 
-import { readFile } from 'fs/promises';
-import { join } from 'path';
-import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
-import {
-  AnalysisError,
-  ErrorCode,
-  ErrorSeverity,
-} from '../errors/ErrorTypes.js';
+import { readFile } from 'fs/promises';
 
 /**
  * Rule violation interface
@@ -147,7 +140,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.STYLE,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.trim().endsWith('{') && line.includes('if ') && !line.includes('\n')) {
           return {
             rule: 'cpp-style-001',
@@ -170,7 +163,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.STYLE,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.length > 120) {
           return {
             rule: 'cpp-style-002',
@@ -194,14 +187,14 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.PERFORMANCE,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/(\w+)\s+(\w+)\s*\([^)]*std::(string|vector|map|set)\s+(\w+)[^)]*\)/);
-        if (match && !line.includes('const') && !line.includes('&')) {
+        if (match && match[1] && !line.includes('const') && !line.includes('&')) {
           return {
             rule: 'cpp-perf-001',
             file: filePath,
             line: lineNumber,
-            column: line.indexOf(match[3]),
+            column: match[3] ? line.indexOf(match[3]) : 0,
             severity: 'warning',
             message: 'Large object passed by value',
             suggestion: 'Pass large objects by const reference to avoid unnecessary copying',
@@ -218,7 +211,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.PERFORMANCE,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.includes('string') && line.includes('+') && !line.includes('append')) {
           return {
             rule: 'cpp-perf-002',
@@ -242,7 +235,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.MEMORY,
       cppStandards: ['cpp11', 'cpp14', 'cpp17', 'cpp20', 'cpp23'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.includes('new ') && !line.includes('std::') && !line.includes('//')) {
           return {
             rule: 'cpp-mem-001',
@@ -265,8 +258,8 @@ export class CppRuleEngine {
       severity: 'error',
       category: RuleCategory.MEMORY,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
-        if (line.includes('new ') && !content.includes('delete') && !line.includes('std::')) {
+      check: (line, lineNumber, _content, filePath) => {
+        if (line.includes('new ') && !_content.includes('delete') && !line.includes('std::')) {
           return {
             rule: 'cpp-mem-002',
             file: filePath,
@@ -289,7 +282,7 @@ export class CppRuleEngine {
       severity: 'error',
       category: RuleCategory.SECURITY,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const unsafeFunctions = ['strcpy', 'strcat', 'sprintf', 'gets'];
         for (const func of unsafeFunctions) {
           if (line.includes(`${func}(`)) {
@@ -315,10 +308,10 @@ export class CppRuleEngine {
       severity: 'error',
       category: RuleCategory.SECURITY,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.includes('char ') && line.includes('[') && !line.includes('const')) {
           const match = line.match(/char\s+\w+\[(\d+)\]/);
-          if (match && parseInt(match[1]) > 1024) {
+          if (match && match[1] && match[1] && parseInt(match[1]) > 1024) {
             return {
               rule: 'cpp-sec-002',
               file: filePath,
@@ -342,7 +335,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.MODERN_CPP,
       cppStandards: ['cpp11', 'cpp14', 'cpp17', 'cpp20', 'cpp23'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (line.includes('NULL') && !line.includes('//') && !line.includes('/*')) {
           return {
             rule: 'cpp-modern-001',
@@ -365,14 +358,14 @@ export class CppRuleEngine {
       severity: 'info',
       category: RuleCategory.MODERN_CPP,
       cppStandards: ['cpp11', 'cpp14', 'cpp17', 'cpp20', 'cpp23'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/^\s*(std::\w+(?:<[^>]+>)?)\s+(\w+)\s*=/);
-        if (match && !line.includes('auto')) {
+        if (match && match[1] && match[1] && !line.includes('auto')) {
           return {
             rule: 'cpp-modern-002',
             file: filePath,
             line: lineNumber,
-            column: line.indexOf(match[1]),
+            column: match[1] ? line.indexOf(match[1]) : 0,
             severity: 'info',
             message: 'Consider using auto for type deduction',
             suggestion: 'Use auto to improve code readability and maintainability',
@@ -389,7 +382,7 @@ export class CppRuleEngine {
       severity: 'info',
       category: RuleCategory.MODERN_CPP,
       cppStandards: ['cpp11', 'cpp14', 'cpp17', 'cpp20', 'cpp23'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/for\s*\(\s*\w+\s+\w+\s*=\s*\w+\.begin\(\)/);
         if (match) {
           return {
@@ -414,7 +407,7 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.BEST_PRACTICES,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         if (filePath.endsWith('.h') || filePath.endsWith('.hpp')) {
           if (lineNumber === 1 && !line.includes('#ifndef') && !line.includes('#pragma once')) {
             return {
@@ -439,14 +432,14 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.BEST_PRACTICES,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/(\w+)\s*\*\s*(\w+)\s*=/);
-        if (match && !line.includes('const') && !line.includes('//')) {
+        if (match && match[1] && !line.includes('const') && !line.includes('//')) {
           return {
             rule: 'cpp-best-002',
             file: filePath,
             line: lineNumber,
-            column: line.indexOf(match[1]),
+            column: match[1] ? line.indexOf(match[1]) : 0,
             severity: 'warning',
             message: 'Consider using const for immutable data',
             suggestion: 'Add const qualifier for better code safety',
@@ -464,14 +457,14 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.NAMING,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/class\s+([a-z]\w*)/);
         if (match) {
           return {
             rule: 'cpp-naming-001',
             file: filePath,
             line: lineNumber,
-            column: line.indexOf(match[1]),
+            column: match[1] ? line.indexOf(match[1]) : 0,
             severity: 'warning',
             message: 'Class name should use PascalCase',
             suggestion: 'Use PascalCase for class names (e.g., MyClass)',
@@ -488,14 +481,14 @@ export class CppRuleEngine {
       severity: 'info',
       category: RuleCategory.NAMING,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         const match = line.match(/const\s+\w+\s+([a-z]\w*)\s*=/);
-        if (match && !match[1].includes('_')) {
+        if (match && match[1] && !match[1].includes('_')) {
           return {
             rule: 'cpp-naming-002',
             file: filePath,
             line: lineNumber,
-            column: line.indexOf(match[1]),
+            column: match[1] ? line.indexOf(match[1]) : 0,
             severity: 'info',
             message: 'Constant should use UPPER_CASE naming',
             suggestion: 'Use UPPER_CASE for constant names (e.g., MAX_SIZE)',
@@ -513,9 +506,9 @@ export class CppRuleEngine {
       severity: 'warning',
       category: RuleCategory.COMPLEXITY,
       cppStandards: ['all'],
-      check: (line, lineNumber, content, filePath) => {
+      check: (line, lineNumber, _content, filePath) => {
         // This is a simplified check - would need more sophisticated analysis
-        if (line.includes('{') && content.split('\n').length > 100) {
+        if (line.includes('{') && _content.split('\n').length > 100) {
           return {
             rule: 'cpp-complex-001',
             file: filePath,
@@ -588,7 +581,7 @@ export class CppRuleEngine {
    * Create a rule check function from configuration
    */
   private createRuleFromConfig(ruleConfig: any): CppRule['check'] {
-    return (line: string, lineNumber: number, content: string, filePath: string) => {
+    return (line: string, lineNumber: number, _content: string, filePath: string) => {
       // Simplified rule creation from config
       // In a real implementation, this would support more sophisticated rule definitions
       if (ruleConfig.pattern && new RegExp(ruleConfig.pattern).test(line)) {

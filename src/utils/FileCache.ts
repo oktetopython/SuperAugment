@@ -10,9 +10,7 @@ import { createHash } from 'crypto';
 import { logger } from './logger.js';
 import {
   FileSystemError,
-  PerformanceError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 
 /**

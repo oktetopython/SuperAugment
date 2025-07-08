@@ -5,14 +5,12 @@
  * semantic analysis, dependency tracking, and code metrics calculation.
  */
 
-import { readFile } from 'fs/promises';
-import { join, dirname, basename, extname } from 'path';
+import { join, dirname } from 'path';
 import { FileSystemManager } from '../utils/FileSystemManager.js';
 import { logger } from '../utils/logger.js';
 import {
   AnalysisError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 
 /**
@@ -210,7 +208,7 @@ export class CppAnalyzer {
   /**
    * Analyze C++ semantics (placeholder implementation)
    */
-  async analyzeSemantics(filePath: string, cppStandard: string): Promise<any> {
+  async analyzeSemantics(_filePath: string, _cppStandard: string): Promise<any> {
     // Placeholder for semantic analysis
     // In a real implementation, this would involve:
     // - Type checking
@@ -569,7 +567,7 @@ export class CppAnalyzer {
         const [, modifier, returnType, name] = match;
         
         functions.push({
-          name,
+          name: name || 'unknown',
           line: index + 1,
           returnType: returnType || 'void',
           parameters: [], // Simplified - would need proper parsing
@@ -598,7 +596,7 @@ export class CppAnalyzer {
         const [, type, name, inheritance] = match;
         
         classes.push({
-          name,
+          name: name || 'unknown',
           line: index + 1,
           type: type as 'class' | 'struct',
           baseClasses: inheritance ? inheritance.split(',').map(s => s.trim()) : [],
@@ -623,7 +621,7 @@ export class CppAnalyzer {
       const match = line.match(namespaceRegex);
       if (match && !line.includes('//')) {
         namespaces.push({
-          name: match[1],
+          name: match[1] || 'unknown',
           line: index + 1,
           nested: false, // Simplified
         });
@@ -636,7 +634,7 @@ export class CppAnalyzer {
   /**
    * Extract include statements
    */
-  private extractIncludes(lines: string[], filePath: string): CppInclude[] {
+  private extractIncludes(lines: string[], _filePath: string): CppInclude[] {
     const includes: CppInclude[] = [];
     const includeRegex = /^\s*#include\s*[<"](.*)[>"]$/;
 
@@ -647,7 +645,7 @@ export class CppAnalyzer {
         const isSystem = line.includes('<');
         
         includes.push({
-          file,
+          file: file || 'unknown',
           line: index + 1,
           type: isSystem ? 'system' : 'local',
           found: false, // Will be resolved later
@@ -661,7 +659,7 @@ export class CppAnalyzer {
   /**
    * Extract variable declarations
    */
-  private extractVariables(lines: string[]): CppVariable[] {
+  private extractVariables(_lines: string[]): CppVariable[] {
     const variables: CppVariable[] = [];
     // Simplified variable extraction
     return variables;
@@ -678,7 +676,7 @@ export class CppAnalyzer {
       const match = line.match(enumRegex);
       if (match && !line.includes('//')) {
         enums.push({
-          name: match[2],
+          name: match[2] || 'unknown',
           line: index + 1,
           values: [], // Would need to parse enum values
           isClass: !!match[1],

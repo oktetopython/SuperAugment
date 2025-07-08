@@ -4,12 +4,11 @@ import { fileURLToPath } from 'url';
 import YAML from 'yaml';
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
-import { ConfigValidator, ValidationResult } from './ConfigValidator.js';
-import { ConfigWatcher, ConfigChangeEvent, ConfigChangeType } from './ConfigWatcher.js';
+import { ConfigValidator, type ValidationResult } from './ConfigValidator.js';
+import { ConfigWatcher, type ConfigChangeEvent } from './ConfigWatcher.js';
 import {
   ConfigurationError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 
 // Get the directory of the current module
@@ -379,14 +378,26 @@ export class ConfigManager {
     errors: number;
     warnings: number;
   } {
-    return {
+    const result: {
+      initialized: boolean;
+      valid: boolean;
+      hotReloadEnabled: boolean;
+      lastValidation?: Date;
+      errors: number;
+      warnings: number;
+    } = {
       initialized: this.isInitialized,
       valid: this.lastValidationResult?.isValid ?? false,
       hotReloadEnabled: this.watcher !== null,
-      lastValidation: this.lastValidationResult?.metadata.validatedAt,
       errors: this.lastValidationResult?.errors.length ?? 0,
       warnings: this.lastValidationResult?.warnings.length ?? 0,
     };
+    
+    if (this.lastValidationResult?.metadata.validatedAt) {
+      result.lastValidation = this.lastValidationResult.metadata.validatedAt;
+    }
+    
+    return result;
   }
 
   /**

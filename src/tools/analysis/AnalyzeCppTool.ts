@@ -7,16 +7,15 @@
  */
 
 import { z } from 'zod';
-import { join, extname, dirname, basename } from 'path';
-import { BaseTool, ToolExecutionContext, ToolExecutionResult } from '../BaseTool.js';
+import { basename } from 'path';
+import { BaseTool, type ToolExecutionContext, type ToolExecutionResult } from '../BaseTool.js';
 import { ConfigManager } from '../../config/ConfigManager.js';
 import { FileSystemManager } from '../../utils/FileSystemManager.js';
-import { CppAnalyzer, CppAnalysisResult } from '../../analyzers/CppAnalyzer.js';
-import { CppRuleEngine, CppRule, RuleViolation } from '../../analyzers/CppRuleEngine.js';
+import { CppAnalyzer } from '../../analyzers/CppAnalyzer.js';
+import { CppRuleEngine, type RuleViolation } from '../../analyzers/CppRuleEngine.js';
 import {
   AnalysisError,
   ErrorCode,
-  ErrorSeverity,
 } from '../../errors/ErrorTypes.js';
 
 /**
@@ -375,7 +374,7 @@ export class AnalyzeCppTool extends BaseTool {
   ): Promise<void> {
     for (const file of files) {
       try {
-        const analysis = await this.cppAnalyzer.analyzeSemantics(file, options.cppStandard);
+        await this.cppAnalyzer.analyzeSemantics(file, options.cppStandard);
         
         // Process semantic analysis results
         // This would include type checking, scope analysis, etc.
@@ -479,7 +478,6 @@ export class AnalyzeCppTool extends BaseTool {
     }
 
     // Calculate code quality score
-    const totalIssues = report.codeQuality.issues.length;
     const errorCount = report.codeQuality.issues.filter(i => i.severity === 'error').length;
     const warningCount = report.codeQuality.issues.filter(i => i.severity === 'warning').length;
     
@@ -606,7 +604,7 @@ export class AnalyzeCppTool extends BaseTool {
    */
   private async calculateMetrics(
     files: string[],
-    options: CppAnalysisOptions,
+    _options: CppAnalysisOptions,
     report: CppAnalysisReport
   ): Promise<void> {
     let totalComplexity = 0;
@@ -658,7 +656,7 @@ export class AnalyzeCppTool extends BaseTool {
   /**
    * Generate final scores and overall assessment
    */
-  private generateFinalScores(report: CppAnalysisReport): void {
+  private generateFinalScores(_report: CppAnalysisReport): void {
     // Overall scores are already calculated in individual analysis methods
     // This method can be used for any final adjustments or overall scoring
   }
@@ -755,16 +753,18 @@ ${recommendations.join('\n')}
       content,
       metadata: {
         executionTime: 0, // Will be set by BaseTool
-        analysisType: 'cpp_comprehensive',
-        filesAnalyzed: fileCount,
-        codeQualityScore: report.codeQuality.score,
-        overallScore: Math.round((
-          report.codeQuality.score +
-          report.modernCpp.score +
-          report.performance.score +
-          report.memory.score +
-          report.security.score
-        ) / 5),
+        performance: {
+          analysisType: 'cpp_comprehensive',
+          filesAnalyzed: fileCount,
+          codeQualityScore: report.codeQuality.score,
+          overallScore: Math.round((
+            report.codeQuality.score +
+            report.modernCpp.score +
+            report.performance.score +
+            report.memory.score +
+            report.security.score
+          ) / 5),
+        },
       },
     };
   }

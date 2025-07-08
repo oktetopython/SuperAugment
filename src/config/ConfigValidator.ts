@@ -13,8 +13,6 @@ import { logger } from '../utils/logger.js';
 import {
   ConfigurationError,
   ErrorCode,
-  ErrorSeverity,
-  ErrorContext,
 } from '../errors/ErrorTypes.js';
 
 /**
@@ -135,13 +133,13 @@ const PatternsSchema = z.object({
 }).strict();
 
 // Main configuration schema
-const ConfigSchema = z.object({
-  version: z.string().optional(),
-  personas: z.array(PersonaSchema),
-  tools: z.array(ToolConfigSchema),
-  patterns: PatternsSchema.optional(),
-  settings: SettingsSchema.optional(),
-}).strict();
+// const ConfigSchema = z.object({
+//   version: z.string().optional(),
+//   personas: z.array(PersonaSchema),
+//   tools: z.array(ToolConfigSchema),
+//   patterns: PatternsSchema.optional(),
+//   settings: SettingsSchema.optional(),
+// }).strict();
 
 /**
  * Configuration validator class
@@ -245,7 +243,7 @@ export class ConfigValidator {
         const names = new Set<string>();
         for (let i = 0; i < personas.length; i++) {
           const persona = personas[i];
-          if (names.has(persona.name)) {
+          if (persona && names.has(persona.name)) {
             errors.push({
               code: 'DUPLICATE_PERSONA_NAME',
               message: `Duplicate persona name: ${persona.name}`,
@@ -254,7 +252,9 @@ export class ConfigValidator {
               suggestion: 'Use unique names for each persona',
             });
           }
-          names.add(persona.name);
+          if (persona) {
+            names.add(persona.name);
+          }
         }
 
         // Check for reasonable number of personas
@@ -361,7 +361,7 @@ export class ConfigValidator {
         const names = new Set<string>();
         for (let i = 0; i < tools.length; i++) {
           const tool = tools[i];
-          if (names.has(tool.name)) {
+          if (tool && names.has(tool.name)) {
             errors.push({
               code: 'DUPLICATE_TOOL_NAME',
               message: `Duplicate tool name: ${tool.name}`,
@@ -370,7 +370,9 @@ export class ConfigValidator {
               suggestion: 'Use unique names for each tool',
             });
           }
-          names.add(tool.name);
+          if (tool) {
+            names.add(tool.name);
+          }
         }
 
         // Check category distribution

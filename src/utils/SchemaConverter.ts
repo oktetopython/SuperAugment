@@ -8,9 +8,9 @@
 import { z } from 'zod';
 import { logger } from './logger.js';
 import {
-  ValidationError,
   ErrorCode,
   ErrorSeverity,
+  SuperAugmentError,
 } from '../errors/ErrorTypes.js';
 
 /**
@@ -111,10 +111,12 @@ export class SchemaConverter {
       this.stats.conversionTime = Date.now() - startTime;
       this.stats.failedConversions++;
 
-      throw new ValidationError(
+      throw new SuperAugmentError(
         `Schema conversion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         ErrorCode.VALIDATION_FAILED,
+        ErrorSeverity.HIGH,
         { additionalInfo: { stats: this.stats, options: opts } },
+        false,
         error instanceof Error ? error : undefined
       );
     }
@@ -155,10 +157,12 @@ export class SchemaConverter {
     depth: number
   ): JsonSchema {
     if (depth > options.maxDepth) {
-      throw new ValidationError(
+      throw new SuperAugmentError(
         `Maximum conversion depth exceeded: ${options.maxDepth}`,
         ErrorCode.VALIDATION_FAILED,
-        { additionalInfo: { depth, maxDepth: options.maxDepth } }
+        ErrorSeverity.HIGH,
+        { additionalInfo: { depth, maxDepth: options.maxDepth } },
+        false
       );
     }
 
@@ -171,12 +175,17 @@ export class SchemaConverter {
     const property = this.convertZodTypeInternal(zodSchema, options, depth);
     
     if (property.type === 'object' && property.properties) {
-      return {
+      const result: JsonSchema = {
         type: 'object',
         properties: property.properties,
-        required: property.required,
         additionalProperties: false,
       };
+      
+      if (property.required) {
+        result.required = property.required;
+      }
+      
+      return result;
     }
 
     // Fallback: wrap non-object types in a generic object
@@ -232,12 +241,17 @@ export class SchemaConverter {
       }
     }
 
-    return {
+    const result: JsonSchema = {
       type: 'object',
       properties,
-      required: required.length > 0 ? required : undefined,
       additionalProperties: false,
     };
+    
+    if (required.length > 0) {
+      result.required = required;
+    }
+    
+    return result;
   }
 
   /**
@@ -323,12 +337,15 @@ export class SchemaConverter {
         this.stats.unsupportedTypes.push(typeName || 'unknown');
         logger.warn(`Unsupported Zod type: ${typeName}`, { typeName });
         
-        return {
+        const result: JsonSchemaProperty = {
           type: 'string',
-          description: options.includeDescriptions 
-            ? `Unsupported type: ${typeName}` 
-            : undefined,
         };
+        
+        if (options.includeDescriptions) {
+          result.description = `Unsupported type: ${typeName}`;
+        }
+        
+        return result;
     }
   }
 
@@ -442,11 +459,16 @@ export class SchemaConverter {
   ): JsonSchemaProperty {
     const objectSchema = this.convertZodObject(zodObject, options, depth);
     
-    return {
+    const result: JsonSchemaProperty = {
       type: 'object',
       properties: objectSchema.properties,
-      required: objectSchema.required,
     };
+    
+    if (objectSchema.required) {
+      result.required = objectSchema.required;
+    }
+    
+    return result;
   }
 
   /**
@@ -571,13 +593,15 @@ export class SchemaConverter {
   private convertZodRecord(
     zodRecord: z.ZodRecord<any>,
     options: ConversionOptions,
-    depth: number
+    _depth: number
   ): JsonSchemaProperty {
+    const description = options.includeDescriptions 
+      ? `Record type${zodRecord.description ? ': ' + zodRecord.description : ''}` 
+      : undefined;
+    
     return {
       type: 'object',
-      description: options.includeDescriptions 
-        ? `Record type${zodRecord.description ? ': ' + zodRecord.description : ''}` 
-        : undefined,
+      ...(description && { description }),
     };
   }
 

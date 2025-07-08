@@ -1,13 +1,11 @@
 import { readFile, readdir, stat, access, writeFile, mkdir } from 'fs/promises';
-import { join, relative, extname, basename, dirname, normalize, resolve } from 'path';
+import { join, relative, extname, basename, dirname, normalize } from 'path';
 import { glob } from 'glob';
 import { logger } from './logger.js';
-import { FileCache, CacheStats } from './FileCache.js';
+import { FileCache, type CacheStats } from './FileCache.js';
 import {
   FileSystemError,
-  PerformanceError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 
 export interface FileInfo {

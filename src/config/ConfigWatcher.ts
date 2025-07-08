@@ -5,15 +5,14 @@
  * hot reload capabilities and change notification system.
  */
 
-import { watch, FSWatcher } from 'fs';
+import { watch, type FSWatcher } from 'fs';
 import { join } from 'path';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger.js';
-import { ConfigValidator, ValidationResult } from './ConfigValidator.js';
+import { ConfigValidator, type ValidationResult } from './ConfigValidator.js';
 import {
   ConfigurationError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 
 /**
@@ -307,7 +306,6 @@ export class ConfigWatcher extends EventEmitter {
    */
   private async createBackup(filename: string): Promise<void> {
     const fs = await import('fs/promises');
-    const path = await import('path');
     
     const sourceFile = join(this.configPath, filename);
     const backupDir = join(this.configPath, '.backups');
@@ -338,7 +336,6 @@ export class ConfigWatcher extends EventEmitter {
   private async cleanupOldBackups(filename: string, backupDir: string): Promise<void> {
     try {
       const fs = await import('fs/promises');
-      const path = await import('path');
 
       const files = await fs.readdir(backupDir);
       const backupFiles = files

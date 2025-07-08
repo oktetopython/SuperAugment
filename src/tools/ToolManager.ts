@@ -6,7 +6,6 @@ import {
   SuperAugmentError,
   ToolExecutionError,
   ErrorCode,
-  ErrorSeverity,
 } from '../errors/ErrorTypes.js';
 import { globalErrorHandler } from '../errors/ErrorHandler.js';
 
@@ -91,7 +90,7 @@ export class ToolManager {
         tools.push({
           name,
           description: tool.description,
-          inputSchema: jsonSchema,
+          inputSchema: jsonSchema as any,
         });
 
         logger.debug(`Successfully converted schema for tool: ${name}`, {
