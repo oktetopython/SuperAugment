@@ -11,7 +11,7 @@ personas:
     approach: "Think holistically about system design, considering long-term maintainability, scalability, and architectural principles. Focus on high-level structure and component interactions."
     tools:
       - "analyze_code"
-      - "design_system"
+      - "analyze_project"
       - "review_code"
 
   - name: frontend
