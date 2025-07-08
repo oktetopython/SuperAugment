@@ -1,6 +1,7 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ConfigManager } from '../config/ConfigManager.js';
 import { logger } from '../utils/logger.js';
+import { SchemaConverter } from '../utils/SchemaConverter.js';
 import {
   SuperAugmentError,
   ToolExecutionError,
@@ -14,6 +15,7 @@ import { AnalyzeCodeTool } from './analysis/AnalyzeCodeTool.js';
 import { AnalyzeProjectTool } from './analysis/AnalyzeProjectTool.js';
 import { ReviewCodeTool } from './analysis/ReviewCodeTool.js';
 import { SecurityScanTool } from './analysis/SecurityScanTool.js';
+import { AnalyzeCppTool } from './analysis/AnalyzeCppTool.js';
 import { BuildProjectTool } from './build/BuildProjectTool.js';
 import { TestProjectTool } from './build/TestProjectTool.js';
 import { DeployApplicationTool } from './build/DeployApplicationTool.js';
@@ -33,8 +35,11 @@ export interface SuperAugmentTool {
  */
 export class ToolManager {
   private tools: Map<string, SuperAugmentTool> = new Map();
+  private schemaConverter: SchemaConverter;
 
-  constructor(private configManager: ConfigManager) {}
+  constructor(private configManager: ConfigManager) {
+    this.schemaConverter = new SchemaConverter();
+  }
 
   /**
    * Initialize the tool manager
@@ -48,6 +53,7 @@ export class ToolManager {
       this.registerTool(new AnalyzeProjectTool(this.configManager));
       this.registerTool(new ReviewCodeTool(this.configManager));
       this.registerTool(new SecurityScanTool(this.configManager));
+      this.registerTool(new AnalyzeCppTool(this.configManager));
       this.registerTool(new BuildProjectTool(this.configManager));
       this.registerTool(new TestProjectTool(this.configManager));
       this.registerTool(new DeployApplicationTool(this.configManager));
@@ -68,24 +74,54 @@ export class ToolManager {
   }
 
   /**
-   * List all available tools
+   * List all available tools with enhanced schema conversion
    */
   async listTools(): Promise<Tool[]> {
     const tools: Tool[] = [];
 
     for (const [name, tool] of this.tools) {
-      // Create MCP-compatible schema
-      const mcpSchema = {
-        type: "object" as const,
-        properties: this.zodSchemaToProperties(tool.inputSchema),
-      };
+      try {
+        // Use the robust SchemaConverter for MCP-compatible schema
+        const jsonSchema = this.schemaConverter.convertZodToJsonSchema(tool.inputSchema, {
+          includeDescriptions: true,
+          includeDefaults: true,
+          strictMode: false,
+        });
 
-      tools.push({
-        name,
-        description: tool.description,
-        inputSchema: mcpSchema,
-      });
+        tools.push({
+          name,
+          description: tool.description,
+          inputSchema: jsonSchema,
+        });
+
+        logger.debug(`Successfully converted schema for tool: ${name}`, {
+          toolName: name,
+          conversionStats: this.schemaConverter.getStats(),
+        });
+
+      } catch (error) {
+        logger.error(`Failed to convert schema for tool: ${name}`, {
+          toolName: name,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+
+        // Fallback to basic schema
+        tools.push({
+          name,
+          description: tool.description,
+          inputSchema: {
+            type: 'object',
+            properties: {},
+            additionalProperties: true,
+          },
+        });
+      }
     }
+
+    logger.info(`Listed ${tools.length} tools with schema conversion`, {
+      totalTools: tools.length,
+      conversionStats: this.schemaConverter.getStats(),
+    });
 
     return tools;
   }
@@ -168,66 +204,17 @@ export class ToolManager {
   }
 
   /**
-   * Convert Zod schema to MCP-compatible properties
+   * Get schema conversion statistics
    */
-  private zodSchemaToProperties(schema: any): Record<string, any> {
-    try {
-      // For Zod object schemas, extract the shape
-      if (schema._def && schema._def.shape) {
-        const properties: Record<string, any> = {};
-        const shape = schema._def.shape();
-
-        for (const [key, value] of Object.entries(shape)) {
-          properties[key] = this.zodTypeToJsonSchema(value as any);
-        }
-
-        return properties;
-      }
-
-      // Fallback for other schema types
-      return {};
-    } catch (error) {
-      logger.warn(`Failed to convert schema for tool`, { error });
-      return {};
-    }
+  getSchemaConversionStats() {
+    return this.schemaConverter.getStats();
   }
 
   /**
-   * Convert individual Zod type to JSON Schema
+   * Clear schema conversion cache
    */
-  private zodTypeToJsonSchema(zodType: any): any {
-    try {
-      const typeName = zodType._def?.typeName;
-
-      switch (typeName) {
-        case 'ZodString':
-          return { type: 'string', description: zodType.description };
-        case 'ZodNumber':
-          return { type: 'number', description: zodType.description };
-        case 'ZodBoolean':
-          return { type: 'boolean', description: zodType.description };
-        case 'ZodArray':
-          return {
-            type: 'array',
-            items: this.zodTypeToJsonSchema(zodType._def.type),
-            description: zodType.description
-          };
-        case 'ZodEnum':
-          return {
-            type: 'string',
-            enum: zodType._def.values,
-            description: zodType.description
-          };
-        case 'ZodOptional':
-          return this.zodTypeToJsonSchema(zodType._def.innerType);
-        case 'ZodDefault':
-          const baseSchema = this.zodTypeToJsonSchema(zodType._def.innerType);
-          return { ...baseSchema, default: zodType._def.defaultValue() };
-        default:
-          return { type: 'string', description: zodType.description || 'Unknown type' };
-      }
-    } catch (error) {
-      return { type: 'string', description: 'Error parsing schema' };
-    }
+  clearSchemaCache(): void {
+    this.schemaConverter.clearCache();
+    logger.info('Schema conversion cache cleared');
   }
 }
