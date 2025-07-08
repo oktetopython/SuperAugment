@@ -1,7 +1,14 @@
-import { readFile, readdir, stat, access } from 'fs/promises';
-import { join, relative, extname, basename } from 'path';
+import { readFile, readdir, stat, access, writeFile, mkdir } from 'fs/promises';
+import { join, relative, extname, basename, dirname, normalize, resolve } from 'path';
 import { glob } from 'glob';
 import { logger } from './logger.js';
+import { FileCache, CacheStats } from './FileCache.js';
+import {
+  FileSystemError,
+  PerformanceError,
+  ErrorCode,
+  ErrorSeverity,
+} from '../errors/ErrorTypes.js';
 
 export interface FileInfo {
   path: string;
@@ -22,15 +29,169 @@ export interface ProjectStructure {
 }
 
 /**
- * Manages file system operations for SuperAugment
+ * Enhanced file system manager with caching, security, and performance optimizations
  */
 export class FileSystemManager {
   private maxFileSize = 10 * 1024 * 1024; // 10MB
+  private fileCache: FileCache;
+  private securityEnabled = true;
+  private performanceMonitoring = true;
   private allowedExtensions = new Set([
     '.js', '.ts', '.jsx', '.tsx', '.vue', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.h',
     '.css', '.scss', '.sass', '.less', '.html', '.xml', '.json', '.yaml', '.yml', '.md',
     '.sql', '.sh', '.bat', '.ps1', '.dockerfile', '.gitignore', '.env'
   ]);
+
+  constructor(options: {
+    maxFileSize?: number;
+    enableCache?: boolean;
+    enableSecurity?: boolean;
+    enablePerformanceMonitoring?: boolean;
+    cacheOptions?: any;
+  } = {}) {
+    this.maxFileSize = options.maxFileSize || this.maxFileSize;
+    this.securityEnabled = options.enableSecurity ?? true;
+    this.performanceMonitoring = options.enablePerformanceMonitoring ?? true;
+    
+    // Initialize file cache if enabled
+    if (options.enableCache !== false) {
+      this.fileCache = new FileCache(options.cacheOptions);
+      logger.info('File system manager initialized with caching enabled');
+    } else {
+      // Create a no-op cache for consistency
+      this.fileCache = new FileCache({ maxMemoryUsage: 0, maxEntries: 0 });
+      logger.info('File system manager initialized without caching');
+    }
+  }
+
+  /**
+   * Enhanced file reading with caching and security checks
+   */
+  async readFileContent(filePath: string): Promise<string> {
+    const startTime = Date.now();
+    
+    try {
+      // Security check
+      if (this.securityEnabled) {
+        await this.validateFilePath(filePath);
+      }
+
+      // Use cache for file reading
+      const content = await this.fileCache.getFile(filePath);
+      
+      // Performance monitoring
+      if (this.performanceMonitoring) {
+        const duration = Date.now() - startTime;
+        logger.debug(`File read completed: ${filePath}`, {
+          duration,
+          size: Buffer.byteLength(content, 'utf-8'),
+          cached: this.fileCache.has(filePath),
+        });
+      }
+
+      return content;
+
+    } catch (error) {
+      throw new FileSystemError(
+        `Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        filePath,
+        ErrorCode.FILE_READ_ERROR,
+        { additionalInfo: { duration: Date.now() - startTime } },
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Secure file writing with directory creation
+   */
+  async writeFileContent(filePath: string, content: string): Promise<void> {
+    const startTime = Date.now();
+    
+    try {
+      // Security check
+      if (this.securityEnabled) {
+        await this.validateFilePath(filePath);
+      }
+
+      // Ensure directory exists
+      const dir = dirname(filePath);
+      await mkdir(dir, { recursive: true });
+
+      // Write file
+      await writeFile(filePath, content, 'utf-8');
+
+      // Invalidate cache entry if it exists
+      this.fileCache.invalidate(filePath);
+
+      // Performance monitoring
+      if (this.performanceMonitoring) {
+        const duration = Date.now() - startTime;
+        logger.debug(`File write completed: ${filePath}`, {
+          duration,
+          size: Buffer.byteLength(content, 'utf-8'),
+        });
+      }
+
+    } catch (error) {
+      throw new FileSystemError(
+        `Failed to write file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        filePath,
+        ErrorCode.FILE_WRITE_ERROR,
+        { additionalInfo: { duration: Date.now() - startTime } },
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Validate file path for security
+   */
+  private async validateFilePath(filePath: string): Promise<void> {
+    const normalizedPath = normalize(filePath);
+    
+    // Check for path traversal attempts
+    if (normalizedPath.includes('..')) {
+      throw new FileSystemError(
+        'Path traversal detected in file path',
+        filePath,
+        ErrorCode.PERMISSION_DENIED,
+        { additionalInfo: { normalizedPath } }
+      );
+    }
+
+    // Check file extension
+    const ext = extname(normalizedPath).toLowerCase();
+    if (ext && !this.allowedExtensions.has(ext)) {
+      throw new FileSystemError(
+        `File extension not allowed: ${ext}`,
+        filePath,
+        ErrorCode.PERMISSION_DENIED,
+        { additionalInfo: { extension: ext, allowedExtensions: Array.from(this.allowedExtensions) } }
+      );
+    }
+
+    // Check if file exists and get stats
+    try {
+      const stats = await stat(normalizedPath);
+      
+      // Check file size
+      if (stats.size > this.maxFileSize) {
+        throw new FileSystemError(
+          `File too large: ${stats.size} bytes (max: ${this.maxFileSize})`,
+          filePath,
+          ErrorCode.FILE_TOO_LARGE,
+          { additionalInfo: { fileSize: stats.size, maxSize: this.maxFileSize } }
+        );
+      }
+    } catch (error) {
+      if ((error as any).code === 'ENOENT') {
+        // File doesn't exist, which is okay for write operations
+        return;
+      }
+      throw error;
+    }
+  }
 
   /**
    * Read files matching glob patterns
@@ -67,7 +228,7 @@ export class FileSystemManager {
   }
 
   /**
-   * Read a single file
+   * Read a single file with enhanced caching and error handling
    */
   async readFile(filePath: string, rootPath: string = process.cwd()): Promise<FileInfo | null> {
     try {
@@ -154,10 +315,10 @@ export class FileSystemManager {
         extension,
       };
 
-      // Read content for text files
+      // Read content for text files using enhanced file reading
       if (this.isTextFile(extension)) {
         try {
-          fileInfo.content = await readFile(fullPath, 'utf-8');
+          fileInfo.content = await this.readFileContent(fullPath);
         } catch (error) {
           logger.warn(`Failed to read file content: ${fullPath}`, error);
         }
@@ -295,5 +456,188 @@ export class FileSystemManager {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): CacheStats {
+    return this.fileCache.getStats();
+  }
+
+  /**
+   * Clear file cache
+   */
+  clearCache(): void {
+    this.fileCache.clear();
+    logger.info('File system cache cleared');
+  }
+
+  /**
+   * Invalidate specific file in cache
+   */
+  invalidateFile(filePath: string): boolean {
+    return this.fileCache.invalidate(filePath);
+  }
+
+  /**
+   * Check if file exists
+   */
+  async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get file stats safely
+   */
+  async getFileStats(filePath: string): Promise<{ size: number; mtime: Date } | null> {
+    try {
+      const stats = await stat(filePath);
+      return {
+        size: stats.size,
+        mtime: stats.mtime,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Find files by pattern with caching
+   */
+  async findFiles(pattern: string, rootPath: string = process.cwd()): Promise<string[]> {
+    try {
+      const files = await glob(pattern, {
+        cwd: rootPath,
+        ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
+        absolute: true,
+      });
+      
+      return files.filter(file => {
+        const ext = extname(file).toLowerCase();
+        return this.allowedExtensions.has(ext) || ext === '';
+      });
+    } catch (error) {
+      throw new FileSystemError(
+        `Failed to find files with pattern: ${pattern}`,
+        pattern,
+        ErrorCode.FILE_READ_ERROR,
+        { additionalInfo: { rootPath } },
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Get file content with specific encoding
+   */
+  async readFileWithEncoding(filePath: string, encoding: BufferEncoding = 'utf-8'): Promise<string> {
+    try {
+      if (this.securityEnabled) {
+        await this.validateFilePath(filePath);
+      }
+
+      // For non-UTF8 encodings, bypass cache and read directly
+      if (encoding !== 'utf-8') {
+        const content = await readFile(filePath, encoding);
+        return content;
+      }
+
+      // Use cache for UTF-8 files
+      return await this.readFileContent(filePath);
+    } catch (error) {
+      throw new FileSystemError(
+        `Failed to read file with encoding ${encoding}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        filePath,
+        ErrorCode.FILE_READ_ERROR,
+        { additionalInfo: { encoding } },
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Batch read multiple files efficiently
+   */
+  async readMultipleFiles(filePaths: string[]): Promise<Map<string, string>> {
+    const results = new Map<string, string>();
+    const errors: string[] = [];
+
+    // Process files in parallel with concurrency limit
+    const concurrency = 10;
+    for (let i = 0; i < filePaths.length; i += concurrency) {
+      const batch = filePaths.slice(i, i + concurrency);
+      
+      const batchPromises = batch.map(async (filePath) => {
+        try {
+          const content = await this.readFileContent(filePath);
+          results.set(filePath, content);
+        } catch (error) {
+          errors.push(`${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      });
+
+      await Promise.all(batchPromises);
+    }
+
+    if (errors.length > 0) {
+      logger.warn(`Failed to read ${errors.length} files:`, { errors: errors.slice(0, 5) });
+    }
+
+    logger.info(`Successfully read ${results.size}/${filePaths.length} files`);
+    return results;
+  }
+
+  /**
+   * Update file system manager options
+   */
+  updateOptions(options: {
+    maxFileSize?: number;
+    enableSecurity?: boolean;
+    enablePerformanceMonitoring?: boolean;
+  }): void {
+    if (options.maxFileSize !== undefined) {
+      this.maxFileSize = options.maxFileSize;
+    }
+    if (options.enableSecurity !== undefined) {
+      this.securityEnabled = options.enableSecurity;
+    }
+    if (options.enablePerformanceMonitoring !== undefined) {
+      this.performanceMonitoring = options.enablePerformanceMonitoring;
+    }
+
+    logger.info('File system manager options updated', { options });
+  }
+
+  /**
+   * Get health status of file system manager
+   */
+  getHealthStatus(): {
+    cacheEnabled: boolean;
+    securityEnabled: boolean;
+    performanceMonitoring: boolean;
+    maxFileSize: number;
+    cacheStats: CacheStats;
+  } {
+    return {
+      cacheEnabled: this.fileCache.getStats().maxMemoryUsage > 0,
+      securityEnabled: this.securityEnabled,
+      performanceMonitoring: this.performanceMonitoring,
+      maxFileSize: this.maxFileSize,
+      cacheStats: this.fileCache.getStats(),
+    };
+  }
+
+  /**
+   * Cleanup resources
+   */
+  cleanup(): void {
+    this.fileCache.cleanup();
+    logger.info('File system manager cleaned up');
   }
 }

@@ -4,6 +4,13 @@ import { fileURLToPath } from 'url';
 import YAML from 'yaml';
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
+import { ConfigValidator, ValidationResult } from './ConfigValidator.js';
+import { ConfigWatcher, ConfigChangeEvent, ConfigChangeType } from './ConfigWatcher.js';
+import {
+  ConfigurationError,
+  ErrorCode,
+  ErrorSeverity,
+} from '../errors/ErrorTypes.js';
 
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -40,22 +47,74 @@ export type ToolConfig = z.infer<typeof ToolConfigSchema>;
 export type Config = z.infer<typeof ConfigSchema>;
 
 /**
- * Manages configuration loading and access for SuperAugment
+ * Enhanced configuration manager with validation and hot reload capabilities
  */
 export class ConfigManager {
   private config: Config | null = null;
   private configPath: string;
+  private validator: ConfigValidator;
+  private watcher: ConfigWatcher | null = null;
+  private isInitialized = false;
+  private lastValidationResult: ValidationResult | null = null;
 
   constructor() {
     this.configPath = join(PROJECT_ROOT, 'config');
+    this.validator = new ConfigValidator();
   }
 
   /**
-   * Initialize the configuration manager
+   * Initialize the configuration manager with validation and optional hot reload
    */
-  async initialize(): Promise<void> {
+  async initialize(options: { enableHotReload?: boolean; validateOnLoad?: boolean } = {}): Promise<void> {
+    const { enableHotReload = true, validateOnLoad = true } = options;
+
     try {
-      logger.info('Loading SuperAugment configuration...');
+      logger.info('Initializing SuperAugment configuration manager...');
+
+      // Validate configuration first if enabled
+      if (validateOnLoad) {
+        logger.info('Validating configuration files...');
+        this.lastValidationResult = await this.validator.validateAll(this.configPath);
+        
+        if (!this.lastValidationResult.isValid) {
+          const errorCount = this.lastValidationResult.errors.length;
+          const warningCount = this.lastValidationResult.warnings.length;
+          
+          logger.error(`Configuration validation failed with ${errorCount} errors and ${warningCount} warnings`);
+          
+          // Log first few errors for immediate visibility
+          this.lastValidationResult.errors.slice(0, 3).forEach(error => {
+            logger.error(`Config Error [${error.code}]: ${error.message}`, {
+              path: error.path,
+              suggestion: error.suggestion,
+            });
+          });
+
+          throw new ConfigurationError(
+            `Configuration validation failed with ${errorCount} errors. Please fix configuration files before starting.`,
+            ErrorCode.CONFIG_VALIDATION_FAILED,
+            { 
+              additionalInfo: { 
+                errors: this.lastValidationResult.errors,
+                warnings: this.lastValidationResult.warnings,
+                configPath: this.configPath
+              } 
+            }
+          );
+        }
+
+        if (this.lastValidationResult.warnings.length > 0) {
+          logger.warn(`Configuration loaded with ${this.lastValidationResult.warnings.length} warnings`);
+          this.lastValidationResult.warnings.forEach(warning => {
+            logger.warn(`Config Warning [${warning.code}]: ${warning.message}`, {
+              path: warning.path,
+              suggestion: warning.suggestion,
+            });
+          });
+        }
+
+        logger.info('Configuration validation passed successfully');
+      }
       
       // Load main configuration files
       const personas = await this.loadPersonas();
@@ -71,12 +130,34 @@ export class ConfigManager {
         settings,
       };
 
-      // Validate configuration
-      ConfigSchema.parse(this.config);
+      // Final schema validation
+      try {
+        ConfigSchema.parse(this.config);
+      } catch (error) {
+        throw new ConfigurationError(
+          `Configuration schema validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          ErrorCode.CONFIG_VALIDATION_FAILED,
+          { additionalInfo: { schemaError: error } },
+          error instanceof Error ? error : undefined
+        );
+      }
+
+      // Setup hot reload if enabled
+      if (enableHotReload) {
+        await this.setupHotReload();
+      }
+
+      this.isInitialized = true;
       
-      logger.info(`Loaded ${personas.length} personas and ${tools.length} tools`);
+      logger.info(`Configuration manager initialized successfully`, {
+        personas: personas.length,
+        tools: tools.length,
+        hotReload: enableHotReload,
+        validation: validateOnLoad,
+      });
+
     } catch (error) {
-      logger.error('Failed to load configuration:', error);
+      logger.error('Failed to initialize configuration manager:', error);
       throw error;
     }
   }
@@ -165,5 +246,172 @@ export class ConfigManager {
       logger.warn('No settings configuration found, using default settings');
       return {};
     }
+  }
+
+  /**
+   * Setup hot reload functionality
+   */
+  private async setupHotReload(): Promise<void> {
+    try {
+      this.watcher = new ConfigWatcher(this.configPath, {
+        enableHotReload: true,
+        debounceMs: 1000,
+        validateOnChange: true,
+        backupOnChange: true,
+        maxBackups: 5,
+      });
+
+      // Handle configuration changes
+      this.watcher.on('reload', async (event: ConfigChangeEvent) => {
+        logger.info(`Hot reloading configuration due to ${event.file} change`);
+        try {
+          await this.reloadConfiguration();
+          logger.info('Configuration hot reload completed successfully');
+        } catch (error) {
+          logger.error('Configuration hot reload failed:', error);
+        }
+      });
+
+      // Handle validation failures
+      this.watcher.on('validation_failed', (event: ConfigChangeEvent) => {
+        logger.error(`Configuration validation failed for ${event.file}:`, {
+          errors: event.validationResult?.errors.length || 0,
+          warnings: event.validationResult?.warnings.length || 0,
+        });
+      });
+
+      // Handle validation success
+      this.watcher.on('validation_passed', (event: ConfigChangeEvent) => {
+        logger.info(`Configuration validation passed for ${event.file}`);
+      });
+
+      await this.watcher.startWatching();
+      logger.info('Configuration hot reload enabled');
+
+    } catch (error) {
+      logger.warn('Failed to setup configuration hot reload:', error);
+      // Don't throw error, hot reload is optional
+    }
+  }
+
+  /**
+   * Reload configuration from files
+   */
+  private async reloadConfiguration(): Promise<void> {
+    try {
+      // Validate first
+      const validationResult = await this.validator.validateAll(this.configPath);
+      if (!validationResult.isValid) {
+        throw new ConfigurationError(
+          `Cannot reload invalid configuration: ${validationResult.errors.length} errors found`,
+          ErrorCode.CONFIG_VALIDATION_FAILED,
+          { additionalInfo: { errors: validationResult.errors } }
+        );
+      }
+
+      // Load new configuration
+      const personas = await this.loadPersonas();
+      const tools = await this.loadTools();
+      const patterns = await this.loadPatterns();
+      const settings = await this.loadSettings();
+
+      // Update config
+      this.config = {
+        personas,
+        tools,
+        patterns,
+        settings,
+      };
+
+      this.lastValidationResult = validationResult;
+
+      logger.info('Configuration reloaded successfully', {
+        personas: personas.length,
+        tools: tools.length,
+      });
+
+    } catch (error) {
+      logger.error('Failed to reload configuration:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate current configuration
+   */
+  async validateConfiguration(): Promise<ValidationResult> {
+    try {
+      const result = await this.validator.validateAll(this.configPath);
+      this.lastValidationResult = result;
+      return result;
+    } catch (error) {
+      throw new ConfigurationError(
+        `Configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ErrorCode.CONFIG_VALIDATION_FAILED,
+        { additionalInfo: { configPath: this.configPath } },
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Get last validation result
+   */
+  getLastValidationResult(): ValidationResult | null {
+    return this.lastValidationResult;
+  }
+
+  /**
+   * Check if configuration manager is initialized
+   */
+  isConfigInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  /**
+   * Get configuration health status
+   */
+  getHealthStatus(): {
+    initialized: boolean;
+    valid: boolean;
+    hotReloadEnabled: boolean;
+    lastValidation?: Date;
+    errors: number;
+    warnings: number;
+  } {
+    return {
+      initialized: this.isInitialized,
+      valid: this.lastValidationResult?.isValid ?? false,
+      hotReloadEnabled: this.watcher !== null,
+      lastValidation: this.lastValidationResult?.metadata.validatedAt,
+      errors: this.lastValidationResult?.errors.length ?? 0,
+      warnings: this.lastValidationResult?.warnings.length ?? 0,
+    };
+  }
+
+  /**
+   * Force reload configuration (useful for testing or manual refresh)
+   */
+  async forceReload(): Promise<void> {
+    if (!this.isInitialized) {
+      throw new ConfigurationError(
+        'Configuration manager not initialized',
+        ErrorCode.INITIALIZATION_FAILED
+      );
+    }
+
+    await this.reloadConfiguration();
+  }
+
+  /**
+   * Cleanup resources
+   */
+  async cleanup(): Promise<void> {
+    if (this.watcher) {
+      await this.watcher.stopWatching();
+      this.watcher = null;
+    }
+    this.isInitialized = false;
+    logger.info('Configuration manager cleaned up');
   }
 }
