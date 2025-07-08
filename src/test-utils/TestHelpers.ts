@@ -107,9 +107,10 @@ export class MockFactory {
 
     const mock = {
       getConfig: jest.fn().mockReturnValue(mockConfig),
-      get: jest.fn().mockImplementation((key: string) => {
+      get: jest.fn().mockImplementation((...args: any[]) => {
+        const key = args[0] as string;
         const keys = key.split('.');
-        let value = mockConfig;
+        let value: any = mockConfig;
         for (const k of keys) {
           value = value?.[k];
         }
@@ -133,21 +134,23 @@ export class MockFactory {
    */
   static createMockFileSystemManager(
     mockFiles: MockFileStructure = {}
-  ): jest.Mocked<FileSystemManager> {
+  ): any {
     const mock = {
-      readFileContent: jest.fn().mockImplementation((path: string) => {
+      readFileContent: jest.fn().mockImplementation((...args: any[]) => {
+        const path = args[0] as string;
         const content = this.getMockFileContent(mockFiles, path);
         if (content === undefined) {
           throw new Error(`File not found: ${path}`);
         }
         return Promise.resolve(content);
       }),
-      writeFileContent: jest.fn().mockResolvedValue(undefined),
-      fileExists: jest.fn().mockImplementation((path: string) => {
+      writeFileContent: jest.fn(),
+      fileExists: jest.fn().mockImplementation((...args: any[]) => {
+        const path = args[0] as string;
         return Promise.resolve(this.getMockFileContent(mockFiles, path) !== undefined);
       }),
-      findFiles: jest.fn().mockResolvedValue([]),
-      readMultipleFiles: jest.fn().mockResolvedValue(new Map()),
+      findFiles: jest.fn(),
+      readMultipleFiles: jest.fn(),
       getCacheStats: jest.fn().mockReturnValue({
         totalEntries: 0,
         totalSize: 0,
@@ -160,10 +163,7 @@ export class MockFactory {
       }),
       clearCache: jest.fn(),
       invalidateFile: jest.fn().mockReturnValue(true),
-      getFileStats: jest.fn().mockResolvedValue({
-        size: 1024,
-        mtime: new Date(),
-      }),
+      getFileStats: jest.fn(),
       cleanup: jest.fn(),
     } as unknown as jest.Mocked<FileSystemManager>;
 
@@ -184,10 +184,11 @@ export class MockFactory {
       if (typeof current === 'string') {
         return undefined;
       }
-      current = current[part];
-      if (current === undefined) {
+      const next: string | MockFileStructure | undefined = current[part];
+      if (next === undefined) {
         return undefined;
       }
+      current = next;
     }
 
     return typeof current === 'string' ? current : undefined;
@@ -223,9 +224,9 @@ export class MockFactory {
   /**
    * Create a mock ErrorHandler
    */
-  static createMockErrorHandler(): jest.Mocked<ErrorHandler> {
+  static createMockErrorHandler(): any {
     const mock = {
-      handleError: jest.fn().mockRejectedValue(new Error('Mock error')),
+      handleError: jest.fn(),
       getStats: jest.fn().mockReturnValue({
         totalErrors: 0,
         errorsByType: {},
