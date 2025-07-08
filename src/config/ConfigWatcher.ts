@@ -5,7 +5,7 @@
  * hot reload capabilities and change notification system.
  */
 
-import { watch, type FSWatcher } from 'fs';
+import { watch, type FSWatcher, type Stats } from 'fs';
 import { join } from 'path';
 import { EventEmitter } from 'events';
 import { logger } from '../utils/logger';
@@ -343,7 +343,7 @@ export class ConfigWatcher extends EventEmitter {
         .map(file => ({
           name: file,
           path: join(backupDir, file),
-          stat: null as fs.Stats | null,
+          stat: null as Stats | null,
         }));
 
       // Get file stats for sorting by creation time

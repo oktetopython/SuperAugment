@@ -70,6 +70,7 @@ interface Tool {
   name: string;
   description?: string;
   category?: string;
+  personas?: string[];
   [key: string]: unknown;
 }
 
@@ -579,12 +580,12 @@ export class ConfigValidator {
         this.loadYamlFile(join(configPath, 'tools.yml')),
       ]);
 
-      if (personasData?.personas && toolsData?.tools) {
-        const personaNames = new Set((personasData.personas as Persona[]).map(p => p.name));
-        const toolNames = new Set((toolsData.tools as Tool[]).map(t => t.name));
+      if (personasData?.['personas'] && toolsData?.['tools']) {
+        const personaNames = new Set((personasData['personas'] as Persona[]).map(p => p.name));
+        const toolNames = new Set((toolsData['tools'] as Tool[]).map(t => t.name));
 
         // Check if personas reference valid tools
-        for (const persona of personasData.personas) {
+        for (const persona of (personasData['personas'] as Persona[])) {
           if (persona.tools) {
             for (const toolName of persona.tools) {
               if (!toolNames.has(toolName)) {
@@ -601,7 +602,7 @@ export class ConfigValidator {
         }
 
         // Check if tools reference valid personas
-        for (const tool of toolsData.tools) {
+        for (const tool of (toolsData['tools'] as Tool[])) {
           if (tool.personas) {
             for (const personaName of tool.personas) {
               if (!personaNames.has(personaName)) {
@@ -619,13 +620,13 @@ export class ConfigValidator {
 
         // Check for orphaned tools (not referenced by any persona)
         const referencedTools = new Set<string>();
-        for (const persona of personasData.personas) {
+        for (const persona of (personasData['personas'] as Persona[])) {
           if (persona.tools) {
             persona.tools.forEach((tool: string) => referencedTools.add(tool));
           }
         }
 
-        for (const tool of toolsData.tools) {
+        for (const tool of (toolsData['tools'] as Tool[])) {
           if (!referencedTools.has(tool.name)) {
             warnings.push({
               code: 'ORPHANED_TOOL',

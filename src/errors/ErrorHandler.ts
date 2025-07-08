@@ -374,7 +374,7 @@ export class ErrorHandler {
       circuitBreakerState: this.metrics.circuitBreakerState,
       consecutiveFailures: this.metrics.consecutiveFailures,
       recentErrorsCount: this.metrics.recentErrors.length,
-      lastFailureTime: this.metrics.lastFailureTime,
+      ...(this.metrics.lastFailureTime && { lastFailureTime: this.metrics.lastFailureTime }),
     };
   }
 }
