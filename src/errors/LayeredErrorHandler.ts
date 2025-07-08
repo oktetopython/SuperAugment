@@ -10,19 +10,21 @@ import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger.js';
 import type {
   IErrorHandler,
-  ErrorContext,
+  ErrorContext as IErrorContext,
   ErrorRecoveryStrategy,
   ErrorReport,
   ErrorMetrics,
 } from '../interfaces/IErrorHandler.js';
 import {
   ErrorCode,
+  ErrorSeverity,
   SuperAugmentError,
   ToolExecutionError,
   AnalysisError,
   ConfigurationError,
   FileSystemError,
 } from './ErrorTypes.js';
+import type { ErrorContext } from './ErrorTypes.js';
 
 /**
  * Error layer interface
@@ -30,9 +32,46 @@ import {
 interface ErrorLayer {
   name: string;
   priority: number;
-  canHandle: (error: Error, context: ErrorContext) => boolean;
-  handle: (error: Error, context: ErrorContext) => Promise<ErrorReport>;
+  canHandle: (error: Error, context: IErrorContext) => boolean;
+  handle: (error: Error, context: IErrorContext) => Promise<ErrorReport>;
 }
+
+/**
+ * Convert ErrorTypes.ErrorContext to IErrorHandler.ErrorContext
+ * TODO: Use this adapter when integrating with existing error handling code
+ */
+// function adaptErrorContext(context: ErrorContext): IErrorContext {
+//   return {
+//     operation: context.additionalInfo?.['operation'] || 'unknown',
+//     component: context.additionalInfo?.['component'] || 'unknown',
+//     ...(context.userId && { userId: context.userId }),
+//     ...(context.sessionId && { sessionId: context.sessionId }),
+//     timestamp: context.timestamp || new Date(),
+//     ...(context.additionalInfo && { metadata: context.additionalInfo }),
+//   };
+// }
+
+/**
+ * Convert IErrorHandler.ErrorContext to ErrorTypes.ErrorContext
+ * TODO: Use this adapter when creating SuperAugmentError instances
+ */
+// function adaptToErrorTypesContext(context: IErrorContext): ErrorContext {
+//   return {
+//     ...(context.metadata?.['toolName'] && { toolName: context.metadata['toolName'] }),
+//     ...(context.metadata?.['filePath'] && { filePath: context.metadata['filePath'] }),
+//     ...(context.metadata?.['lineNumber'] && { lineNumber: context.metadata['lineNumber'] }),
+//     ...(context.metadata?.['columnNumber'] && { columnNumber: context.metadata['columnNumber'] }),
+//     ...(context.metadata?.['stackTrace'] && { stackTrace: context.metadata['stackTrace'] }),
+//     additionalInfo: {
+//       operation: context.operation,
+//       component: context.component,
+//       ...context.metadata,
+//     },
+//     timestamp: context.timestamp,
+//     ...(context.userId && { userId: context.userId }),
+//     ...(context.sessionId && { sessionId: context.sessionId }),
+//   };
+// }
 
 /**
  * Layered error handler implementation
@@ -113,7 +152,7 @@ export class LayeredErrorHandler implements IErrorHandler {
 
   async handleError(
     error: Error,
-    context: ErrorContext,
+    context: IErrorContext,
     options?: {
       severity?: 'low' | 'medium' | 'high' | 'critical';
       recoverable?: boolean;
@@ -207,7 +246,7 @@ export class LayeredErrorHandler implements IErrorHandler {
 
   async attemptRecovery(
     error: Error,
-    context: ErrorContext
+    context: IErrorContext
   ): Promise<{
     recovered: boolean;
     result?: any;
@@ -260,21 +299,16 @@ export class LayeredErrorHandler implements IErrorHandler {
     context?: ErrorContext,
     cause?: Error
   ): Error {
-    const errorClass = this.getErrorClassForCode(code);
-    const error = new errorClass(message, code);
+    const error = this.createErrorForCode(message, code, context || {} as ErrorContext, cause);
     
     if (cause) {
-      error.cause = cause;
-    }
-    
-    if (context) {
-      (error as any).context = context;
+      (error as any).cause = cause;
     }
     
     return error;
   }
 
-  isRecoverable(error: Error, context: ErrorContext): boolean {
+  isRecoverable(error: Error, context: IErrorContext): boolean {
     return Array.from(this.recoveryStrategies.values())
       .some(strategy => strategy.canRecover(error, context));
   }
@@ -350,7 +384,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     this.recoveryCallbacks.push(callback);
   }
 
-  validateContext(context: ErrorContext): boolean {
+  validateContext(context: IErrorContext): boolean {
     return !!(context.operation && context.component && context.timestamp);
   }
 
@@ -393,7 +427,7 @@ export class LayeredErrorHandler implements IErrorHandler {
 
   // Private helper methods
 
-  private async handleToolExecutionError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+  private async handleToolExecutionError(error: Error, context: IErrorContext): Promise<ErrorReport> {
     const toolError = error as ToolExecutionError;
     return {
       id: randomUUID(),
@@ -408,7 +442,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     };
   }
 
-  private async handleAnalysisError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+  private async handleAnalysisError(error: Error, context: IErrorContext): Promise<ErrorReport> {
     const analysisError = error as AnalysisError;
     return {
       id: randomUUID(),
@@ -423,7 +457,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     };
   }
 
-  private async handleConfigurationError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+  private async handleConfigurationError(error: Error, context: IErrorContext): Promise<ErrorReport> {
     const configError = error as ConfigurationError;
     return {
       id: randomUUID(),
@@ -438,7 +472,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     };
   }
 
-  private async handleFileSystemError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+  private async handleFileSystemError(error: Error, context: IErrorContext): Promise<ErrorReport> {
     const fsError = error as FileSystemError;
     return {
       id: randomUUID(),
@@ -453,7 +487,7 @@ export class LayeredErrorHandler implements IErrorHandler {
     };
   }
 
-  private async handleGenericError(error: Error, context: ErrorContext): Promise<ErrorReport> {
+  private async handleGenericError(error: Error, context: IErrorContext): Promise<ErrorReport> {
     return {
       id: randomUUID(),
       error,
@@ -546,12 +580,59 @@ export class LayeredErrorHandler implements IErrorHandler {
     }
   }
 
-  private getErrorClassForCode(code: ErrorCode): typeof SuperAugmentError {
-    if (code >= 1100 && code < 1200) return ToolExecutionError;
-    if (code >= 1400 && code < 1500) return AnalysisError;
-    if (code >= 1300 && code < 1400) return ConfigurationError;
-    if (code >= 1200 && code < 1300) return FileSystemError;
-    return SuperAugmentError;
+  private createErrorForCode(
+    message: string,
+    code: ErrorCode,
+    context: ErrorContext = {} as ErrorContext,
+    originalError?: Error
+  ): SuperAugmentError {
+    if (code >= 1100 && code < 1200) {
+      // Tool execution errors
+      return new ToolExecutionError(
+        message,
+        context.toolName || 'unknown',
+        code,
+        context,
+        originalError
+      );
+    }
+    if (code >= 1400 && code < 1500) {
+      // Analysis errors
+      return new AnalysisError(message, code, context, originalError);
+    }
+    if (code >= 1300 && code < 1400) {
+      // Configuration errors
+      return new ConfigurationError(message, code, context, originalError);
+    }
+    if (code >= 1200 && code < 1300) {
+      // File system errors
+      return new FileSystemError(
+        message,
+        context.filePath || 'unknown',
+        code,
+        context,
+        originalError
+      );
+    }
+    // Default to base SuperAugmentError
+    return new SuperAugmentError(
+      message,
+      code,
+      this.getSeverityForCodeAsEnum(code),
+      context,
+      false,
+      originalError
+    );
+  }
+
+  private getSeverityForCodeAsEnum(code: ErrorCode): ErrorSeverity {
+    if (code === ErrorCode.INITIALIZATION_FAILED) return ErrorSeverity.CRITICAL;
+    if (code >= 1300 && code < 1400) return ErrorSeverity.HIGH; // Configuration errors
+    if (code >= 1100 && code < 1200) return ErrorSeverity.MEDIUM; // Tool errors
+    if (code >= 1200 && code < 1300) return ErrorSeverity.MEDIUM; // File system errors
+    if (code >= 1400 && code < 1500) return ErrorSeverity.MEDIUM; // Analysis errors
+    if (code >= 1700 && code < 1800) return ErrorSeverity.HIGH; // Performance errors
+    return ErrorSeverity.LOW;
   }
 
   private getSeverityForCode(code: ErrorCode): 'low' | 'medium' | 'high' | 'critical' {
