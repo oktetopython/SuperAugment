@@ -10,7 +10,7 @@ import {
   SuperAugmentError,
   ErrorCode,
   ErrorSeverity,
-  ErrorContext,
+  type ErrorContext,
   isSuperAugmentError,
   wrapError,
 } from './ErrorTypes.js';
@@ -113,7 +113,7 @@ export class ErrorHandler {
     error: unknown,
     context: ErrorContext = {},
     operation?: () => Promise<any>
-  ): Promise<never> {
+  ): Promise<any> {
     const superAugmentError = this.normalizeError(error, context);
     
     // Update metrics
@@ -389,7 +389,7 @@ export async function handleAsyncError<T>(
  * Decorator for automatic error handling in class methods
  */
 export function HandleErrors(context: ErrorContext = {}) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value;
     
     descriptor.value = async function (...args: any[]) {
@@ -398,7 +398,7 @@ export function HandleErrors(context: ErrorContext = {}) {
       } catch (error) {
         const errorContext = {
           ...context,
-          toolName: context.toolName || this.name || this.constructor.name,
+          toolName: context.toolName || (this as any).name || this.constructor.name,
         };
         await globalErrorHandler.handleError(error, errorContext);
       }
