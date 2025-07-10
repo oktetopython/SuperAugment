@@ -15,6 +15,8 @@ import { AnalyzeProjectTool } from './analysis/AnalyzeProjectTool.js';
 import { ReviewCodeTool } from './analysis/ReviewCodeTool.js';
 import { SecurityScanTool } from './analysis/SecurityScanTool.js';
 import { AnalyzeCppTool } from './analysis/AnalyzeCppTool.js';
+import { EnhancedCppAnalysisTool } from './analysis/EnhancedCppAnalysisTool.js';
+import { CudaAnalysisTool } from './analysis/CudaAnalysisTool.js';
 import { BuildProjectTool } from './build/BuildProjectTool.js';
 import { TestProjectTool } from './build/TestProjectTool.js';
 import { DeployApplicationTool } from './build/DeployApplicationTool.js';
@@ -53,6 +55,8 @@ export class ToolManager {
       this.registerTool(new ReviewCodeTool(this.configManager));
       this.registerTool(new SecurityScanTool(this.configManager));
       this.registerTool(new AnalyzeCppTool(this.configManager));
+      this.registerTool(new EnhancedCppAnalysisTool(this.configManager));
+      this.registerTool(new CudaAnalysisTool(this.configManager));
       this.registerTool(new BuildProjectTool(this.configManager));
       this.registerTool(new TestProjectTool(this.configManager));
       this.registerTool(new DeployApplicationTool(this.configManager));
