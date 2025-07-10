@@ -100,6 +100,7 @@ echo "📦 Package: superaugment"
 echo "🏷️  Version: $CURRENT_VERSION"
 echo "👤 Publisher: $NPM_USER"
 echo "🚀 Features: Enhanced C++/CUDA Analysis with Tree-sitter AST"
+echo "🌟 GitHub Release: https://github.com/oktetopython/SuperAugment/releases/tag/v$CURRENT_VERSION"
 echo ""
 
 read -p "Do you want to continue? (y/N): " -n 1 -r
@@ -111,7 +112,7 @@ fi
 
 # Publish to NPM
 print_status "Publishing to NPM..."
-if npm publish; then
+if npm publish superaugment-$CURRENT_VERSION.tgz; then
     print_success "Successfully published SuperAugment v$CURRENT_VERSION!"
     echo ""
     echo "🎉 SuperAugment v$CURRENT_VERSION is now available on NPM!"
